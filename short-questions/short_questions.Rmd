@@ -28,10 +28,78 @@ cereal <- read_csv('../data/short-questions/cereal_dillons.csv')
 (1 point) The explanatory variables need to be reformatted before proceeding further (sample code is provided in the textbook). First, divide each explanatory variable by its serving size to account for the different serving sizes among the cereals. Second, rescale each variable to be within 0 and 1. Construct side-by-side box plots with dot plots overlaid for each of the explanatory variables. Also, construct a parallel coordinates plot for the explanatory variables and the shelf number. Discuss whether possible content differences exist among the shelves.
 
 ```{r recode data}
+# reformatting the explanatory variables
+# cereal$Shelf <- factor(cereal$Shelf)
+cereal$Cereal <- factor(cereal$Cereal)
 
+# normalize the explanatory variables
+# 1. divide by serving size
+# 2. normalized
+cereal$sugar_g <- cereal$sugar_g/cereal$size_g
+cereal$fat_g <- cereal$fat_g/cereal$size_g
+cereal$sodium_mg <- cereal$sodium_mg /cereal$size_g
+
+cereal$size_g <- ((cereal$size_g - min(cereal$size_g)) 
+                    /(max(cereal$size_g) - min(cereal$size_g)))
+
+cereal$sugar_g <- ((cereal$sugar_g - min(cereal$sugar_g)) 
+                    /(max(cereal$sugar_g) - min(cereal$sugar_g)))
+
+cereal$fat_g <- ((cereal$fat_g - min(cereal$fat_g)) 
+                    /(max(cereal$fat_g) - min(cereal$fat_g)))
+
+cereal$sodium_mg <- ((cereal$sodium_mg - min(cereal$sodium_mg))
+                    /(max(cereal$sodium_mg) - min(cereal$sodium_mg)))
 ```
 
 ```{r boxplots}
+p1 <- cereal %>%
+  mutate(Shelf=as.factor(Shelf)) %>%
+  ggplot(aes(Shelf, size_g)) +
+  geom_boxplot(aes(fill = Shelf)) + 
+  #geom_dotplot(aes(x = Shelf, y = size_g)) +
+  coord_flip() +
+  ggtitle("Shelf by Serving Size") + 
+  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  ylab("Serving Size") +
+  xlab("Shelf")
+
+p2 <- cereal %>%
+  mutate(Shelf=as.factor(Shelf)) %>%
+  ggplot(aes(Shelf, sugar_g)) +
+  geom_boxplot(aes(fill = Shelf)) + 
+  #geom_dotplot(aes(x = Shelf, y=sugar_g)) +
+  coord_flip() +
+  ggtitle("Shelf by Sugar Quantity") + 
+  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  ylab("Sugar") +
+  xlab("Shelf")
+
+p3 <- cereal %>%
+  mutate(Shelf=as.factor(Shelf)) %>%
+  ggplot(aes(Shelf, fat_g)) +
+  geom_boxplot(aes(fill = Shelf)) + 
+  geom_dotplot(aes(x = Shelf, y = fat_g)) +
+  coord_flip() +
+  ggtitle("Shelf by Fat Content") + 
+  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  ylab("Fat Content") +
+  xlab("Shelf")
+
+p4 <- cereal %>%
+  mutate(Shelf=as.factor(Shelf)) %>%
+  ggplot(aes(Shelf, sodium_mg)) +
+  geom_boxplot(aes(fill = Shelf)) + 
+  #geom_dotplot(aes(x = Shelf, y = sodium_mg)) +
+  coord_flip() +
+  ggtitle("Shelf by Sodium Level") + 
+  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  ylab("Sodium Level") +
+  xlab("Shelf")
+
+
+grid.arrange(p1, p2, nrow = 2, ncol = 1)
+grid.arrange(p3, p4, nrow = 2, ncol = 1)
 
 ```
 
