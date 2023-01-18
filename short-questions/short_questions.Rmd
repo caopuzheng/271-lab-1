@@ -79,7 +79,7 @@ p3 <- cereal %>%
   mutate(Shelf=as.factor(Shelf)) %>%
   ggplot(aes(Shelf, fat_g)) +
   geom_boxplot(aes(fill = Shelf)) + 
-  geom_dotplot(aes(x = Shelf, y = fat_g)) +
+  #geom_dotplot(aes(x = Shelf, y = fat_g)) +
   coord_flip() +
   ggtitle("Shelf by Fat Content") + 
   theme(plot.title = element_text(lineheight=1, face="bold")) +
