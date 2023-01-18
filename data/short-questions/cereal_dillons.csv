@@ -1,0 +1,41 @@
+ID,Shelf,Cereal,size_g,sugar_g,fat_g,sodium_mg
+1,1,Kellog's Razzle Dazzle Rice Crispies,28,10,0,170
+2,1,Post Toasties Corn Flakes,28,2,0,270
+3,1,Kellogg's Corn Flakes,28,2,0,300
+4,1,Food Club Toasted Oats,32,2,2,280
+5,1,Frosted Cheerios,30,13,1,210
+6,1,Food Club Frosted Flakes,31,11,0,180
+7,1,Capn Crunch,27,12,1.5,200
+8,1,Capn Crunch's Peanut Butter Crunch,27,9,2.5,200
+9,1,Post Honeycomb ,29,11,0.5,220
+10,1,Food Club Crispy Rice,33,2,0,330
+11,2,Rice Crispies Treats,30,9,1.5,190
+12,2,Kellogg's Smacks,27,15,0.5,50
+13,2,Kellogg's Froot Loops,32,15,1,150
+14,2,Capn Crunch's Peanut Butter Crunch,27,9,2.5,200
+15,2,Cinnamon Grahams,30,11,1,230
+16,2,Marshmallow Blasted Froot Loops,30,16,0.5,105
+17,2,Koala Coco Krunch,30,13,1,170
+18,2,Food Club Toasted Oats,33,10,1.5,150
+19,2,Cocoa Pebbles,29,13,1,160
+20,2,Oreo O's,27,11,2.5,150
+21,3,Food Club Raisin Bran,54,17,1,280
+22,3,Post Honey Bunches of Oats,30,6,1.5,190
+23,3,Rice Chex,31,2,0,290
+24,3,Kellogg's Corn Pops,31,14,0,120
+25,3,"Post Morning Traditions - Raisin, Date, Pecan ",54,14,5,160
+26,3,Post Shredded Wheat Spoon Size,49,0,0.5,0
+27,3,Basic 4,55,14,3,320
+28,3,French Toast Crunch,30,12,1,180
+29,3,Post Raisin Bran,59,20,1,300
+30,3,Food Club Frosted Shreded Wheat,50,1,1,0
+31,4,Total Raisin Bran,55,19,1,240
+32,4,Food Club Wheat Crunch,60,6,0,300
+33,4,Oatmeal Crisp Raisin,55,19,2,220
+34,4,Food Club Bran Flakes,31,5,0.5,220
+35,4,Cookie Crisp,30,12,1,180
+36,4,Kellogg's All Bran Original ,31,6,1,65
+37,4,Food Club Low Fat Granola,55,14,3,100
+38,4,Oatmeal Crisp Apple Cinnamon,55,19,2,260
+39,4,"Post Fruit and Fiber - Dates, Raisons, Walnuts",55,17,3,280
+40,4,Total Corn Flakes,30,3,0,200

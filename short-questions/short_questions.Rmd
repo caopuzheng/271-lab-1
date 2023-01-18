@@ -1,0 +1,125 @@
+---
+title: "Lab 1, Short Questions"
+geometry: margin=1in
+output:
+  pdf_document:
+    toc: yes
+    number_sections: yes
+fontsize: 11pt
+---
+
+```{r load packages for homework 2, message=FALSE}
+library(tidyverse)
+library(patchwork)
+```
+
+# Strategic Placement of Products in Grocery Stores (5 points)
+
+These questions are taken from Question 12 of chapter 3 of the textbook(Bilder and Loughin’s “Analysis of Categorical Data with R.
+
+> *In order to maximize sales, items within grocery stores are strategically placed to draw customer attention. This exercise examines one type of item—breakfast cereal. Typically, in large grocery stores, boxes of cereal are placed on sets of shelves located on one side of the aisle. By placing particular boxes of cereals on specific shelves, grocery stores may better attract customers to them. To investigate this further, a random sample of size 10 was taken from each of four shelves at a Dillons grocery store in Manhattan, KS. These data are given in the *cereal_dillons.csv *file. The response variable is the shelf number, which is numbered from bottom (1) to top (4), and the explanatory variables are the sugar, fat, and sodium content of the cereals.*
+
+```{r read cereal data, message=FALSE}
+cereal <- read_csv('../data/short-questions/cereal_dillons.csv')
+```
+
+
+## Recode Data 
+(1 point) The explanatory variables need to be reformatted before proceeding further (sample code is provided in the textbook). First, divide each explanatory variable by its serving size to account for the different serving sizes among the cereals. Second, rescale each variable to be within 0 and 1. Construct side-by-side box plots with dot plots overlaid for each of the explanatory variables. Also, construct a parallel coordinates plot for the explanatory variables and the shelf number. Discuss whether possible content differences exist among the shelves.
+
+```{r recode data}
+
+```
+
+```{r boxplots}
+
+```
+
+> 'Fill in: What do you observe in these boxplots?'
+
+```{r parallel coordiantes plot}
+
+```
+
+> 'Fill in: What do you observe in these parallel coordinates plots?' 
+
+> Fill in: Do content differences exist between the shelves?'
+
+## Evaluate Ordinal vs. Categorical 
+(1 point) The response has values of $1, 2, 3,$ and $4$. Explain under what setting would it be desirable to take into account ordinality, and whether you think that this setting occurs here. Then estimate a suitable multinomial regression model with linear forms of the sugar, fat, and sodium variables. Perform LRTs to examine the importance of each explanatory variable. Show that there are no significant interactions among the explanatory variables (including an interaction among all three variables).
+
+> Fill in: What do you think about ordinal data?' 
+
+```{r multinomial logit regressions}
+model_cereal_shelves_linear    <- 'fill this in'
+model_cereal_shelves_quadratic <- 'fill this in'
+```
+
+```{r likelihood ratio tests: main effects}
+lrt_cereal_main_effects <- 'fill this in'
+```
+
+```{r likelihood ratio tests: interaction effects} 
+lrt_cereal_quadratic_effects <- 'fill this in'
+```
+
+> 'Fill in: Write about what you learn as a result of these tests, using inline code evaluation.'
+
+## Where do you think Apple Jacks will be placed? 
+(1 point) Kellogg’s Apple Jacks (http://www.applejacks.com) is a cereal marketed toward children. For a serving size of $28$ grams, its sugar content is $12$ grams, fat content is $0.5$ grams, and sodium content is $130$ milligrams. Estimate the shelf probabilities for Apple Jacks.
+
+```{r predictions for apple jacks}
+aj_shelf_probs <- 'fill this in'
+```
+
+> 'Fill this in: Where does your model predict apple jacks will be placed?'
+
+## Figure 3.3 
+(1 point) Construct a plot similar to Figure 3.3 where the estimated probability for a shelf is on the *y-axis* and the sugar content is on the *x-axis*. Use the mean overall fat and sodium content as the corresponding variable values in the model. Interpret the plot with respect to sugar content.
+
+```{r create figure 3.3}
+shelf_vs_sugar_plot <- 'fill this in'
+```
+
+> 'Fill this in: What message does your plot give?'
+
+## Odds ratios 
+(1 point) Estimate odds ratios and calculate corresponding confidence intervals for each explanatory variable. Relate your interpretations back to the plots constructed for this exercise. 
+
+```{r produce odds ratios}
+odds_ratios <- 'fill this in'
+```
+
+> 'Fill this in: What do you learn about each of these variables?' 
+
+
+# Alcohol, self-esteem and negative relationship interactions (5 points)
+
+Read the example **'Alcohol Consumption'** in chapter 4.2.2 of the textbook(Bilder and Loughin’s “Analysis of Categorical Data with R). This is based on a study in which moderate-to-heavy drinkers (defined as at least 12 alcoholic drinks/week for women, 15 for men) were recruited to keep a daily record of each drink that they consumed over a 30-day study period. Participants also completed a variety of rating scales covering daily events in their lives and items related to self-esteem. The data are given in the *DeHartSimplified.csv *data set. Questions 24-26 of chapter 3 of the textbook also relate to this data set and give definitions of its variables: the number of drinks consumed (`numall`), positive romantic-relationship events (`prel`), negative romantic-relationship events (`nrel`), age (`age`), trait (long-term) self-esteem (`rosn`), state (short-term) self-esteem (`state`).
+
+The researchers stated the following hypothesis:
+
+> *We hypothesized that negative interactions with romantic partners would be associated with alcohol consumption (and an increased desire to drink). We predicted that people with low trait self-esteem would drink more on days they experienced more negative relationship interactions compared with days during which they experienced fewer negative relationship interactions. The relation between drinking and negative relationship interactions should not be evident for individuals with high trait self-esteem.*
+
+```{r read drinking data, message=FALSE}
+drinks <- read_csv('../data/short-questions/DeHartSimplified.csv')
+```
+
+## EDA 
+(2 points) Conduct a thorough EDA of the data set, giving special attention to the relationships relevant to the researchers' hypotheses. Address the reasons for limiting the study to observations from only one day.
+
+```{r drinking EDA}
+
+```
+
+> 'Fill this in: What do you learn?' 
+
+## Hypothesis One 
+(2 points) The researchers hypothesize that negative interactions with romantic partners would be associated with alcohol consumption and an increased desire to drink. Using appropriate models, evaluate the evidence that negative relationship interactions are associated with higher alcohol consumption and an increased desire to drink. 
+
+> 'Fill this in: What do you learn?' 
+
+## Hypothesis Two
+(1 point) The researchers hypothesize that the relation between drinking and negative relationship interactions should not be evident for individuals with high trait self-esteem. Conduct an analysis to address this hypothesis.
+
+> 'Fill this in: What do you learn?' 

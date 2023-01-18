@@ -1,0 +1,90 @@
+---
+title: "W271 Group Lab 1"
+subtitle: "Investigating the 1986 Space Shuttle Challenger Accident"
+author: "Please fill in with your names."
+output: bookdown::pdf_document2
+fontsize: 11pt
+geometry: margin=1in
+---
+
+\newpage
+
+```{=tex}
+\begin{abstract} 
+This report will, indeed, be abstract. No, instead, describe your goals your approach, and what you learn.
+\end{abstract}
+```
+# Introduction
+
+## Research question
+
+# Data (20 points)
+
+**Complete the following task. In your final submission, please remove this question prompt so that your report reads as a report. The Data Section of this report is worth 20 points.**
+
+-   Conduct a thorough EDA of the data set.
+
+    -   This should include both graphical and tabular analysis as taught in this course.
+    -   Since the report has a page-limit, you will have to be selective when choosing visuals to illustrate your key points, associated with a concise explanation of the visuals.
+
+-   This EDA should begin with an inspection of the given dataset; examination of anomalies, missing values, potential of top and/or bottom code etc.
+
+## Description
+
+**Complete the following task. In your final submission, please remove this question prompt so that your report reads as a report.**
+
+-   Describe the data that you are using. How is this data generated, what is the sampling process that brought it to your availability. If it is helpful, you might describe the population (i.e. the Random Variables) that exist and how samples are produced from these random variables.
+-   The authors use logistic regression to estimate the probability an O-ring will fail. In order to use this model, the authors needed to assume that each O-ring is independent for each launch. Discuss why this assumption is necessary and the potential problems with it. Note that a subsequent analysis helped to alleviate the authors' concerns about independence.
+
+## Key Features
+
+(AKA EDA)
+
+# Analysis
+
+## Reproducing Previous Analysis (10 points)
+
+**Your analysis should address the following two questions. In your final submission, please remove this question prompt so that your report reads as a report.**
+
+1.  Estimate the logistic regression model that the authors present in their report -- include the variables as linear terms in the model. Evaluate, using likelihood ratio tests, the statistical significance of each explanatory variable in the model. Evaluate, using the context and data understanding that you have created in the **Data** section of this report, the practical significance of each explanatory variable in the model.
+
+2.  Dalal, Fowlkes, and Hoadley (1989) chose to remove `pressure` from the model based on their likelihood ratio tests. Critically evaluate, using your test results and understanding of the question and data, whether `pressure` should be included in the model, or instead, `pressure` should not be included in the model. Your report needs to make a determination, argue why it is most appropriate choice, and make note of how (if at all) the model results are affected by the choice of including or excluding `pressure`.
+
+## Confidence Intervals (20 points)
+
+No matter what you determined about using or dropping `pressure`, for this section begin by considering the simplified model $logit(\pi) = \beta_0 + \beta_1 Temp$, where $\pi$ is the probability of an O-ring failure. Complete the following:
+
+1.  Estimate the logistic regression model.
+2.  Determine if a quadratic term is needed in the model for the temperature in this model.
+3.  Construct two plots:
+4.  $\pi$ vs. Temp; and,
+5.  Expected number of failures vs. Temp.
+
+Specific requirements for these plots:
+
+-   Use a temperature range of 31° to 81° on the x-axis even though the minimum temperature in the data set was 53°.\
+-   Include the 95% Wald confidence interval bands for $\pi$ on the plot. Describe, in your analysis of these plots, why the bands much wider for lower temperatures than for higher temperatures?
+
+3.  The temperature was 31° at launch for the Challenger in 1986. Estimate the probability of an O-ring failure using this temperature, and compute a corresponding confidence interval. Discuss what assumptions need to be made in order to apply the inference procedures.
+
+## Bootstrap Confidence Intervals (30 points)
+
+Rather than relying on asymptotic properties, consider using a parametric bootstrap, as did Dalal, Fowlkes and Hoadley. To do this:
+
+1.  Simulate a large number of data sets (n = 23 for each) by re-sampling with replacement from the data.
+2.  Estimate a model for each dataset.
+3.  Compute the effect at a specific temperature of interest.
+
+To produce a confidence interval, the authors used the 0.05 and 0.95 observed quantiles from the simulated distribution as their 90% confidence interval limits.
+
+Using the parametric bootstrap, compute 90% confidence intervals separately at each integer temperature between 10° and 100° Fahrenheit.
+
+In this section, you should describe your process, justify such a process, and present your results in a way that is compelling for your reader.
+
+## Alternative Specification (10 points)
+
+With the same set of explanatory variables in your final model, estimate a linear regression model. Explain the model results; conduct model diagnostic; and assess the validity of the model assumptions. Would you use the linear regression model or binary logistic regression in this case? Explain why.
+
+# Conclusions (10 points)
+
+Interpret the main result of your preferred model in terms of both odds and probability of failure. Summarize this result with respect to the question(s) being asked and key takeaways from the analysis.
