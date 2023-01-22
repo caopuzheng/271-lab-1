@@ -9,8 +9,19 @@ fontsize: 11pt
 ---
 
 ```{r load packages for homework 2, message=FALSE}
+#install.packages("MASS")
 library(tidyverse)
 library(patchwork)
+library(MASS)
+
+## To assemble multiple plots
+library(gridExtra)
+
+# multinomial regression
+library (nnet)
+
+# car pacakge for testing
+library (car)
 ```
 
 # Strategic Placement of Products in Grocery Stores (5 points)
@@ -57,7 +68,7 @@ p1 <- cereal %>%
   mutate(Shelf=as.factor(Shelf)) %>%
   ggplot(aes(Shelf, size_g)) +
   geom_boxplot(aes(fill = Shelf)) + 
-  #geom_dotplot(aes(x = Shelf, y = size_g)) +
+  geom_dotplot( binaxis='y', stackdir='center', binwidth =0.01) +
   coord_flip() +
   ggtitle("Shelf by Serving Size") + 
   theme(plot.title = element_text(lineheight=1, face="bold")) +
@@ -68,7 +79,7 @@ p2 <- cereal %>%
   mutate(Shelf=as.factor(Shelf)) %>%
   ggplot(aes(Shelf, sugar_g)) +
   geom_boxplot(aes(fill = Shelf)) + 
-  #geom_dotplot(aes(x = Shelf, y=sugar_g)) +
+  geom_dotplot( binaxis='y', stackdir='center', binwidth =0.01) +
   coord_flip() +
   ggtitle("Shelf by Sugar Quantity") + 
   theme(plot.title = element_text(lineheight=1, face="bold")) +
@@ -79,7 +90,7 @@ p3 <- cereal %>%
   mutate(Shelf=as.factor(Shelf)) %>%
   ggplot(aes(Shelf, fat_g)) +
   geom_boxplot(aes(fill = Shelf)) + 
-  #geom_dotplot(aes(x = Shelf, y = fat_g)) +
+  geom_dotplot( binaxis='y', stackdir='center', binwidth =0.01) +
   coord_flip() +
   ggtitle("Shelf by Fat Content") + 
   theme(plot.title = element_text(lineheight=1, face="bold")) +
@@ -90,7 +101,7 @@ p4 <- cereal %>%
   mutate(Shelf=as.factor(Shelf)) %>%
   ggplot(aes(Shelf, sodium_mg)) +
   geom_boxplot(aes(fill = Shelf)) + 
-  #geom_dotplot(aes(x = Shelf, y = sodium_mg)) +
+  geom_dotplot( binaxis='y', stackdir='center', binwidth =0.01) +
   coord_flip() +
   ggtitle("Shelf by Sodium Level") + 
   theme(plot.title = element_text(lineheight=1, face="bold")) +
@@ -106,7 +117,11 @@ grid.arrange(p3, p4, nrow = 2, ncol = 1)
 > 'Fill in: What do you observe in these boxplots?'
 
 ```{r parallel coordiantes plot}
-
+cols = c('red', 'green', 'blue', 'purple')
+parcoord(cereal[c("size_g", "sugar_g", "fat_g", "sodium_mg")],
+         col = cols[cereal$Shelf], var.label = TRUE, main="Shelf Type By Explanatory Variables")
+legend("topright", legend=c("Shelf 1", "Shelf 2", "Shelf 3", "Shelf 4"), 
+       lwd = 2, col = cols, inset = 0.05)
 ```
 
 > 'Fill in: What do you observe in these parallel coordinates plots?' 
@@ -119,16 +134,23 @@ grid.arrange(p3, p4, nrow = 2, ncol = 1)
 > Fill in: What do you think about ordinal data?' 
 
 ```{r multinomial logit regressions}
-model_cereal_shelves_linear    <- 'fill this in'
-model_cereal_shelves_quadratic <- 'fill this in'
+model_cereal_shelves_linear    <- multinom(formula = Shelf ~ sugar_g + fat_g 
+                                           + sodium_mg, data = cereal)
+
+model_cereal_shelves_quadratic <- multinom(formula = Shelf ~ sugar_g + fat_g 
+                                           + sodium_mg + sugar_g:fat_g 
+                                           + sugar_g:sodium_mg + fat_g:sodium_mg
+                                           + sugar_g:fat_g:sodium_mg, data = cereal)
 ```
 
 ```{r likelihood ratio tests: main effects}
-lrt_cereal_main_effects <- 'fill this in'
+lrt_cereal_main_effects <- Anova(model_cereal_shelves_linear, test = 'LR')
+lrt_cereal_main_effects
 ```
 
 ```{r likelihood ratio tests: interaction effects} 
-lrt_cereal_quadratic_effects <- 'fill this in'
+lrt_cereal_quadratic_effects <- Anova(model_cereal_shelves_quadratic, test = 'LR')
+lrt_cereal_quadratic_effects
 ```
 
 > 'Fill in: Write about what you learn as a result of these tests, using inline code evaluation.'
@@ -137,7 +159,35 @@ lrt_cereal_quadratic_effects <- 'fill this in'
 (1 point) Kellogg’s Apple Jacks (http://www.applejacks.com) is a cereal marketed toward children. For a serving size of $28$ grams, its sugar content is $12$ grams, fat content is $0.5$ grams, and sodium content is $130$ milligrams. Estimate the shelf probabilities for Apple Jacks.
 
 ```{r predictions for apple jacks}
-aj_shelf_probs <- 'fill this in'
+# create a data set
+new.data <- data.frame("Cereal" = "Apple Jack", 
+                       "size_g" = 28, 
+                       "sugar_g" = 12,
+                       "fat_g" = 0.5,
+                       "sodium_mg" = 130)
+
+new.data$sugar_g <- new.data$sugar_g/new.data$size_g
+new.data$fat_g <- new.data$fat_g/new.data$size_g
+new.data$sodium_mg <- new.data$sodium_mg /new.data$size_g
+
+new.data$size_g <- ((new.data$size_g - min(cereal$size_g)) 
+                    /(max(cereal$size_g) - min(cereal$size_g)))
+
+new.data$sugar_g <- ((new.data$sugar_g - min(cereal$sugar_g)) 
+                    /(max(cereal$sugar_g) - min(cereal$sugar_g)))
+
+new.data$fat_g <- ((new.data$fat_g - min(cereal$fat_g)) 
+                    /(max(cereal$fat_g) - min(cereal$fat_g)))
+
+new.data$sodium_mg <- ((new.data$sodium_mg - min(cereal$sodium_mg))
+                    /(max(cereal$sodium_mg) - min(cereal$sodium_mg)))
+
+# get model prediction for the given inputs
+aj_shelf_probs <- predict(model_cereal_shelves_linear, 
+                      newdata = new.data, 
+                      type = "probs")
+
+aj_shelf_probs
 ```
 
 > 'Fill this in: Where does your model predict apple jacks will be placed?'
