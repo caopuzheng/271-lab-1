@@ -9,8 +9,19 @@ fontsize: 11pt
 ---
 
 ```{r load packages for homework 2, message=FALSE}
+#install.packages("MASS")
 library(tidyverse)
 library(patchwork)
+library(MASS)
+
+## To assemble multiple plots
+library(gridExtra)
+
+# multinomial regression
+library (nnet)
+
+# car pacakge for testing
+library (car)
 ```
 
 # Strategic Placement of Products in Grocery Stores (5 points)
@@ -28,51 +39,176 @@ cereal <- read_csv('../data/short-questions/cereal_dillons.csv')
 (1 point) The explanatory variables need to be reformatted before proceeding further (sample code is provided in the textbook). First, divide each explanatory variable by its serving size to account for the different serving sizes among the cereals. Second, rescale each variable to be within 0 and 1. Construct side-by-side box plots with dot plots overlaid for each of the explanatory variables. Also, construct a parallel coordinates plot for the explanatory variables and the shelf number. Discuss whether possible content differences exist among the shelves.
 
 ```{r recode data}
+# reformatting the explanatory variables
+# cereal$Shelf <- factor(cereal$Shelf)
+cereal$Cereal <- factor(cereal$Cereal)
 
+# normalize the explanatory variables
+# 1. divide by serving size
+# 2. normalized
+
+stand01 <- function(x){(x - min(x)) / (max(x) - min(x))}
+cereal2 <- data.frame(Shelf = cereal$Shelf,
+                      size = cereal$size_g,
+                      sugar = stand01(x = cereal$sugar_g / cereal$size_g),
+                      fat = stand01(x = cereal$fat_g / cereal$size_g),
+                      sodium = stand01(x = cereal$sodium_mg / cereal$size_g)
+                      )
+summary(cereal2)
 ```
 
 ```{r boxplots}
+p1 <- cereal2 %>%
+  mutate(Shelf=as.factor(Shelf)) %>%
+  ggplot(aes(Shelf, size)) +
+  geom_boxplot(aes(fill = Shelf)) + 
+  geom_dotplot( binaxis='y', stackdir='center', binwidth=0.05) +
+  #coord_flip() +
+  ggtitle("Shelf by Serving Size") + 
+  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  ylab("Serving Size") +
+  xlab("Shelf")
+
+p2 <- cereal2 %>%
+  mutate(Shelf=as.factor(Shelf)) %>%
+  ggplot(aes(Shelf, sugar)) +
+  geom_boxplot(aes(fill = Shelf)) + 
+  geom_dotplot( binaxis='y', stackdir='center', binwidth=0.05) +
+  #coord_flip() +
+  ggtitle("Shelf by Sugar Quantity") + 
+  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  ylab("Sugar") +
+  xlab("Shelf")
+
+p3 <- cereal2 %>%
+  mutate(Shelf=as.factor(Shelf)) %>%
+  ggplot(aes(Shelf, fat)) +
+  geom_boxplot(aes(fill = Shelf)) + 
+  geom_dotplot( binaxis='y', stackdir='center', binwidth=0.05) +
+  #coord_flip() +
+  ggtitle("Shelf by Fat Content") + 
+  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  ylab("Fat Content") +
+  xlab("Shelf")
+
+p4 <- cereal2 %>%
+  mutate(Shelf=as.factor(Shelf)) %>%
+  ggplot(aes(Shelf, sodium)) +
+  geom_boxplot(aes(fill = Shelf)) + 
+  geom_dotplot( binaxis='y', stackdir='center', binwidth =0.05) +
+  #coord_flip() +
+  ggtitle("Shelf by Sodium Level") + 
+  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  ylab("Sodium Level") +
+  xlab("Shelf")
+
+
+grid.arrange(p1, p2, nrow = 2, ncol = 1)
+grid.arrange(p3, p4, nrow = 2, ncol = 1)
 
 ```
 
 > 'Fill in: What do you observe in these boxplots?'
+- For the sugar variable, we observe that 1) Of the four shelves, Shelf 2 has the highest mean sugar but also has the smallest variance (consistency within the shelf); 2) Shelf 3 has the lowest mean sugar, but also has relatively large variance among the items on the shelf.
+- For the fat variable, we observe that 1) Of the four shelves, Shelf 2 has the highes mean fat but has relatively smaller variance, similar observation as for the sugar variable; 2) Shelf 1 and 3 have lower fat, but relatively large variance
+- For the sodium variable, we observe that 1) Of the four shelves, Shelf 2, 3 and 4 have similar mean sodiam, but Shelf 2 and 4 have relatively smaller variance.  2) Shelf 1 has the highest sodiuam'
 
 ```{r parallel coordiantes plot}
-
+# for ease of visualization, Adding shelf here.
+cols = c('red', 'green', 'blue', 'black')
+parcoord(cereal2[c("Shelf", "sugar", "fat", "sodium")],
+         col = cols[cereal2$Shelf], var.label = TRUE, 
+         main="Shelf Type By Explanatory Variables")
+legend("topright", legend=c("Shelf 1", "Shelf 2", "Shelf 3", "Shelf 4"), 
+       lwd = 2, col = cols, inset = 0.05)
 ```
 
-> 'Fill in: What do you observe in these parallel coordinates plots?' 
+> 'Fill in: What do you observe in these parallel coordinates plots?
+- For Shelf 2 (green), sugar contents are generally higher, follow by Shelf 1 (red). Shelf 3 (Blue) has the biggest variance in all categories. In term of sodium content, Shelf 1 (red) generally shows the highest level. Shelf 4 (Black), also shows a lower trend on fat content compared to all other Shelfs.' 
 
-> Fill in: Do content differences exist between the shelves?'
+> Fill in: Do content differences exist between the shelves?
+Yes based on the box plot, there are a clear visualization differences between the mean and variance for each individual contents among the shelves. For example, Shelf 2 generally higher sugar/fat content per serving size, which could extract a lot more sales among younger childrens.'
 
 ## Evaluate Ordinal vs. Categorical 
 (1 point) The response has values of $1, 2, 3,$ and $4$. Explain under what setting would it be desirable to take into account ordinality, and whether you think that this setting occurs here. Then estimate a suitable multinomial regression model with linear forms of the sugar, fat, and sodium variables. Perform LRTs to examine the importance of each explanatory variable. Show that there are no significant interactions among the explanatory variables (including an interaction among all three variables).
 
-> Fill in: What do you think about ordinal data?' 
+> Fill in: What do you think about ordinal data?
+The ordinal data referes to the location of the Shelves. Since the shelf system mentioned in this problem is purely due to height. Shelf 1 is at the lowest height, follows by Shelf 2, Shelf 3, and Shelf 4. However, this ordering does not apply to the expected strategical importance from sales perspective.
 
 ```{r multinomial logit regressions}
-model_cereal_shelves_linear    <- 'fill this in'
-model_cereal_shelves_quadratic <- 'fill this in'
+model_cereal_shelves_linear <- multinom(formula = Shelf ~ sugar 
+                                                          + fat
+                                                          + sodium, 
+                                         data = cereal2)
+
+# TODO: TA Clarify the quadratic here
+model_cereal_shelves_quadratic <- multinom(formula = Shelf ~ sugar 
+                                                            + fat 
+                                                            + sodium
+                                                            + sugar:fat
+                                                            + sugar:sodium 
+                                                            + fat:sodium
+                                                            + sugar:fat:sodium, 
+                                           data = cereal2)
+
+summary(model_cereal_shelves_linear)
+summary(model_cereal_shelves_quadratic)
 ```
 
 ```{r likelihood ratio tests: main effects}
-lrt_cereal_main_effects <- 'fill this in'
+lrt_cereal_main_effects <- Anova(model_cereal_shelves_linear, test = 'LR')
+lrt_cereal_main_effects
 ```
 
 ```{r likelihood ratio tests: interaction effects} 
-lrt_cereal_quadratic_effects <- 'fill this in'
+lrt_cereal_quadratic_effects <- anova(model_cereal_shelves_linear, 
+                                      model_cereal_shelves_quadratic, 
+                                      test = 'Chisq')
+lrt_cereal_quadratic_effects
 ```
 
-> 'Fill in: Write about what you learn as a result of these tests, using inline code evaluation.'
+> 'Fill in: Write about what you learn as a result of these tests, using inline code evaluation.
+First Test: For the first model with a linear effect, we are using a LRT test for each individual explanatory variable. The resulted p-values for sugar and sodium contents are both lower than alpha = 0.001, or at 99.99% confidence interval and visualized by three asteriks. This suggest that sugar and sodium content are statistically significant to the model. The fat content estimated parameter resulted in a p-value of 0.1522, which is hgiher than all proposed alpha value. Thus, fat content is not statisitcally significant to the model.
+Second Test: For the second model with quadratic effect. We are using the LRT for a Null hypothesis that the interaction terms among the explanatory variable have estimated parameters of 0, and an alternate hypothesis that they are not. The test resulted in a p-value of 0.3239 from a chi-squared distribution. Since the p-value is greater than the alpha = 0.05 or at 95% confidence level, the interaction terms are not statistically significant.'
 
 ## Where do you think Apple Jacks will be placed? 
 (1 point) Kellogg’s Apple Jacks (http://www.applejacks.com) is a cereal marketed toward children. For a serving size of $28$ grams, its sugar content is $12$ grams, fat content is $0.5$ grams, and sodium content is $130$ milligrams. Estimate the shelf probabilities for Apple Jacks.
 
 ```{r predictions for apple jacks}
-aj_shelf_probs <- 'fill this in'
+# create a data set with stadardized value
+new.data <- data.frame("Cereal" = "Apple Jack", 
+                       "size" = 28, 
+                       "sugar" = 12,
+                       "fat" = 0.5,
+                       "sodium" = 130)
+
+# standardized the data
+new.data$sugar <- new.data$sugar / new.data$size
+new.data$fat <- new.data$fat / new.data$size
+new.data$sodium <- new.data$sodium / new.data$size
+
+new.data$size <- ((new.data$size - min(cereal$size_g)) 
+                    /(max(cereal$size_g) - min(cereal$size_g)))
+
+new.data$sugar <- ((new.data$sugar - min(cereal$sugar_g)) 
+                    /(max(cereal$sugar_g) - min(cereal$sugar_g)))
+
+new.data$fat <- ((new.data$fat - min(cereal$fat_g)) 
+                    /(max(cereal$fat_g) - min(cereal$fat_g)))
+
+new.data$sodium <- ((new.data$sodium - min(cereal$sodium_mg))
+                    /(max(cereal$sodium_mg) - min(cereal$sodium_mg)))
+
+# get model prediction for the given inputs
+aj_shelf_probs <- predict(model_cereal_shelves_linear, 
+                      newdata = new.data, 
+                      type = "probs")
+
+aj_shelf_probs
 ```
 
-> 'Fill this in: Where does your model predict apple jacks will be placed?'
+> 'Fill this in: Where does your model predict apple jacks will be placed?
+Apple Jack place on Shelf 1.'
 
 ## Figure 3.3 
 (1 point) Construct a plot similar to Figure 3.3 where the estimated probability for a shelf is on the *y-axis* and the sugar content is on the *x-axis*. Use the mean overall fat and sodium content as the corresponding variable values in the model. Interpret the plot with respect to sugar content.
