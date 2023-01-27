@@ -10,9 +10,11 @@ fontsize: 11pt
 
 ```{r load packages for homework 2, message=FALSE}
 #install.packages("MASS")
+#install.packages("ggplot2")
 library(tidyverse)
 library(patchwork)
 library(MASS)
+library(ggplot2)   
 
 ## To assemble multiple plots
 library(gridExtra)
@@ -204,17 +206,50 @@ aj_shelf_probs <- predict(model_cereal_shelves_linear,
                       newdata = new.data, 
                       type = "probs")
 
-aj_shelf_probs
+data.frame(pi.hat=round(aj_shelf_probs,5))
 ```
 
 > 'Fill this in: Where does your model predict apple jacks will be placed?
-Apple Jack place on Shelf 1.'
+Based on the outputs, Shelf 3 has the highest probability of 0.5918 follows by Shelf 4 with a probability of 0.408. Thus, Apple Jack is predicted to be placed on Shelf 3.
 
 ## Figure 3.3 
 (1 point) Construct a plot similar to Figure 3.3 where the estimated probability for a shelf is on the *y-axis* and the sugar content is on the *x-axis*. Use the mean overall fat and sodium content as the corresponding variable values in the model. Interpret the plot with respect to sugar content.
 
 ```{r create figure 3.3}
-shelf_vs_sugar_plot <- 'fill this in'
+# stats taken from summary(cereal2) statistics from earlier
+min_sugar <- 0
+max_sugar <- 1
+
+mean_fat <- 0.3476
+mean_sodium <- 0.5240  
+
+shelfs <- function(s) {
+    new.data <- data.frame("sugar" = s,
+                           "fat" = mean_fat,
+                           "sodium" = mean_sodium)
+    pred.prob <- predict(model_cereal_shelves_linear, 
+                         newdata = new.data, type = "probs")
+    
+    outputs <- data.frame(pi.hat=round(pred.prob,10))
+    return(outputs)
+}
+
+
+model.preds <- data.frame(x = seq(0, 1, length.out=100), 
+                          values=c(shelfs(seq(0, 1, length.out=100))$pi.hat.1,
+                                  shelfs(seq(0, 1, length.out=100))$pi.hat.2,
+                                  shelfs(seq(0, 1, length.out=100))$pi.hat.3,
+                                  shelfs(seq(0, 1, length.out=100))$pi.hat.4),
+                          shelf = rep(c("Shelf 1", "Shelf 2", "Shelf 3", "Shelf 4"), 
+                          each = 100))
+
+ggplot(model.preds,                                   # Draw ggplot2 plot
+       aes(x, values, col = shelf)) +
+  geom_line() +
+  ggtitle("Predicted Shelf Probability by Sugar Content") +
+  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  ylab(expression(hat(pi))) +
+  xlab("Normailized Sugar Content")
 ```
 
 > 'Fill this in: What message does your plot give?'
