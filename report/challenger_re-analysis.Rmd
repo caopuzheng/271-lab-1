@@ -12,11 +12,14 @@ geometry: margin=1in
 ```{=tex}
 \begin{abstract} 
 This report will, indeed, be abstract. No, instead, describe your goals your approach, and what you learn.
+In this study, we are investigating the effect of physical condition such as temperature and pressure have on the odds of O Rings failure on a space shuttle. 
 \end{abstract}
 ```
 # Introduction
 
 ## Research question
+
+Does a various physical conditions, in term of temperature and pressure, effect the odds of O-Rings failures on a shuttle?
 
 # Data (20 points)
 
@@ -28,7 +31,41 @@ This report will, indeed, be abstract. No, instead, describe your goals your app
     -   Since the report has a page-limit, you will have to be selective when choosing visuals to illustrate your key points, associated with a concise explanation of the visuals.
 
 -   This EDA should begin with an inspection of the given dataset; examination of anomalies, missing values, potential of top and/or bottom code etc.
+```{r load packages for homework 2, message=FALSE}
+#install.packages("MASS")
+#install.packages("ggplot2")
+#install.packages("sandwich")
+#install.packages("stargazer")
+#install.packages("mcprofile")
 
+library(tidyverse)
+library(patchwork)
+
+# multinomial regression
+library(nnet)
+
+# car pacakge for testing
+library(car)
+
+library(sandwich)
+library(knitr)
+library(stargazer)
+library(mcprofile)
+```
+
+```{r read challenger data, message=FALSE}
+challenger <- read_csv("../data/raw/challenger.csv")
+```
+```{r tabular EDA, message = FALSE}
+glimpse(challenger)
+summary(challenger)
+describe(challenger)
+```
+```{r compute probability data}
+# Since there are 6 Orings on a shuttle
+challenger$failure_rate <- challenger$O.ring / challenger$Number
+
+```
 ## Description
 
 **Complete the following task. In your final submission, please remove this question prompt so that your report reads as a report.**
