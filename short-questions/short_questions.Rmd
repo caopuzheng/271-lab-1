@@ -11,6 +11,7 @@ fontsize: 11pt
 ```{r load packages for homework 2, message=FALSE}
 #install.packages("MASS")
 #install.packages("ggplot2")
+# install.packages("MASS")
 library(tidyverse)
 library(patchwork)
 library(MASS)
@@ -20,10 +21,10 @@ library(ggplot2)
 library(gridExtra)
 
 # multinomial regression
-library (nnet)
+library(nnet)
 
 # car pacakge for testing
-library (car)
+library(car)
 ```
 
 # Strategic Placement of Products in Grocery Stores (5 points)
@@ -33,7 +34,7 @@ These questions are taken from Question 12 of chapter 3 of the textbook(Bilder a
 > *In order to maximize sales, items within grocery stores are strategically placed to draw customer attention. This exercise examines one type of item—breakfast cereal. Typically, in large grocery stores, boxes of cereal are placed on sets of shelves located on one side of the aisle. By placing particular boxes of cereals on specific shelves, grocery stores may better attract customers to them. To investigate this further, a random sample of size 10 was taken from each of four shelves at a Dillons grocery store in Manhattan, KS. These data are given in the *cereal_dillons.csv *file. The response variable is the shelf number, which is numbered from bottom (1) to top (4), and the explanatory variables are the sugar, fat, and sodium content of the cereals.*
 
 ```{r read cereal data, message=FALSE}
-cereal <- read_csv('../data/short-questions/cereal_dillons.csv')
+cereal <- read_csv("../data/short-questions/cereal_dillons.csv")
 ```
 
 
@@ -49,65 +50,67 @@ cereal$Cereal <- factor(cereal$Cereal)
 # 1. divide by serving size
 # 2. normalized
 
-stand01 <- function(x){(x - min(x)) / (max(x) - min(x))}
-cereal2 <- data.frame(Shelf = cereal$Shelf,
-                      size = cereal$size_g,
-                      sugar = stand01(x = cereal$sugar_g / cereal$size_g),
-                      fat = stand01(x = cereal$fat_g / cereal$size_g),
-                      sodium = stand01(x = cereal$sodium_mg / cereal$size_g)
-                      )
+stand01 <- function(x) {
+  (x - min(x)) / (max(x) - min(x))
+}
+cereal2 <- data.frame(
+  Shelf = cereal$Shelf,
+  size = cereal$size_g,
+  sugar = stand01(x = cereal$sugar_g / cereal$size_g),
+  fat = stand01(x = cereal$fat_g / cereal$size_g),
+  sodium = stand01(x = cereal$sodium_mg / cereal$size_g)
+)
 summary(cereal2)
 ```
 
 ```{r boxplots}
 p1 <- cereal2 %>%
-  mutate(Shelf=as.factor(Shelf)) %>%
+  mutate(Shelf = as.factor(Shelf)) %>%
   ggplot(aes(Shelf, size)) +
-  geom_boxplot(aes(fill = Shelf)) + 
-  geom_dotplot( binaxis='y', stackdir='center', binwidth=0.05) +
-  #coord_flip() +
-  ggtitle("Shelf by Serving Size") + 
-  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  geom_boxplot(aes(fill = Shelf)) +
+  geom_dotplot(binaxis = "y", stackdir = "center", binwidth = 0.05) +
+  # coord_flip() +
+  ggtitle("Shelf by Serving Size") +
+  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
   ylab("Serving Size") +
   xlab("Shelf")
 
 p2 <- cereal2 %>%
-  mutate(Shelf=as.factor(Shelf)) %>%
+  mutate(Shelf = as.factor(Shelf)) %>%
   ggplot(aes(Shelf, sugar)) +
-  geom_boxplot(aes(fill = Shelf)) + 
-  geom_dotplot( binaxis='y', stackdir='center', binwidth=0.05) +
-  #coord_flip() +
-  ggtitle("Shelf by Sugar Quantity") + 
-  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  geom_boxplot(aes(fill = Shelf)) +
+  geom_dotplot(binaxis = "y", stackdir = "center", binwidth = 0.05) +
+  # coord_flip() +
+  ggtitle("Shelf by Sugar Quantity") +
+  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
   ylab("Sugar") +
   xlab("Shelf")
 
 p3 <- cereal2 %>%
-  mutate(Shelf=as.factor(Shelf)) %>%
+  mutate(Shelf = as.factor(Shelf)) %>%
   ggplot(aes(Shelf, fat)) +
-  geom_boxplot(aes(fill = Shelf)) + 
-  geom_dotplot( binaxis='y', stackdir='center', binwidth=0.05) +
-  #coord_flip() +
-  ggtitle("Shelf by Fat Content") + 
-  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  geom_boxplot(aes(fill = Shelf)) +
+  geom_dotplot(binaxis = "y", stackdir = "center", binwidth = 0.05) +
+  # coord_flip() +
+  ggtitle("Shelf by Fat Content") +
+  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
   ylab("Fat Content") +
   xlab("Shelf")
 
 p4 <- cereal2 %>%
-  mutate(Shelf=as.factor(Shelf)) %>%
+  mutate(Shelf = as.factor(Shelf)) %>%
   ggplot(aes(Shelf, sodium)) +
-  geom_boxplot(aes(fill = Shelf)) + 
-  geom_dotplot( binaxis='y', stackdir='center', binwidth =0.05) +
-  #coord_flip() +
-  ggtitle("Shelf by Sodium Level") + 
-  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  geom_boxplot(aes(fill = Shelf)) +
+  geom_dotplot(binaxis = "y", stackdir = "center", binwidth = 0.05) +
+  # coord_flip() +
+  ggtitle("Shelf by Sodium Level") +
+  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
   ylab("Sodium Level") +
   xlab("Shelf")
 
 
 grid.arrange(p1, p2, nrow = 2, ncol = 1)
 grid.arrange(p3, p4, nrow = 2, ncol = 1)
-
 ```
 
 > 'Fill in: What do you observe in these boxplots?'
@@ -117,12 +120,15 @@ grid.arrange(p3, p4, nrow = 2, ncol = 1)
 
 ```{r parallel coordiantes plot}
 # for ease of visualization, Adding shelf here.
-cols = c('red', 'green', 'blue', 'black')
+cols <- c("red", "green", "blue", "black")
 parcoord(cereal2[c("Shelf", "sugar", "fat", "sodium")],
-         col = cols[cereal2$Shelf], var.label = TRUE, 
-         main="Shelf Type By Explanatory Variables")
-legend("topright", legend=c("Shelf 1", "Shelf 2", "Shelf 3", "Shelf 4"), 
-       lwd = 2, col = cols, inset = 0.05)
+  col = cols[cereal2$Shelf], var.label = TRUE,
+  main = "Shelf Type By Explanatory Variables"
+)
+legend("topright",
+  legend = c("Shelf 1", "Shelf 2", "Shelf 3", "Shelf 4"),
+  lwd = 2, col = cols, inset = 0.05
+)
 ```
 
 > 'Fill in: What do you observe in these parallel coordinates plots?
@@ -138,34 +144,39 @@ Yes based on the box plot, there are a clear visualization differences between t
 The ordinal data referes to the location of the Shelves. Since the shelf system mentioned in this problem is purely due to height. Shelf 1 is at the lowest height, follows by Shelf 2, Shelf 3, and Shelf 4. However, this ordering does not apply to the expected strategical importance from sales perspective.
 
 ```{r multinomial logit regressions}
-model_cereal_shelves_linear <- multinom(formula = Shelf ~ sugar 
-                                                          + fat
-                                                          + sodium, 
-                                         data = cereal2)
+model_cereal_shelves_linear <- multinom(
+  formula = Shelf ~ sugar
+    + fat
+    + sodium,
+  data = cereal2
+)
 
 # TODO: TA Clarify the quadratic here
-model_cereal_shelves_quadratic <- multinom(formula = Shelf ~ sugar 
-                                                            + fat 
-                                                            + sodium
-                                                            + sugar:fat
-                                                            + sugar:sodium 
-                                                            + fat:sodium
-                                                            + sugar:fat:sodium, 
-                                           data = cereal2)
+model_cereal_shelves_quadratic <- multinom(
+  formula = Shelf ~ sugar
+    + fat
+    + sodium
+    + sugar:fat
+    + sugar:sodium
+    + fat:sodium
+    + sugar:fat:sodium,
+  data = cereal2
+)
 
 summary(model_cereal_shelves_linear)
 summary(model_cereal_shelves_quadratic)
 ```
 
 ```{r likelihood ratio tests: main effects}
-lrt_cereal_main_effects <- Anova(model_cereal_shelves_linear, test = 'LR')
+lrt_cereal_main_effects <- Anova(model_cereal_shelves_linear, test = "LR")
 lrt_cereal_main_effects
 ```
 
 ```{r likelihood ratio tests: interaction effects} 
-lrt_cereal_quadratic_effects <- anova(model_cereal_shelves_linear, 
-                                      model_cereal_shelves_quadratic, 
-                                      test = 'Chisq')
+lrt_cereal_quadratic_effects <- anova(model_cereal_shelves_linear,
+  model_cereal_shelves_quadratic,
+  test = "Chisq"
+)
 lrt_cereal_quadratic_effects
 ```
 
@@ -178,33 +189,36 @@ Second Test: For the second model with quadratic effect. We are using the LRT fo
 
 ```{r predictions for apple jacks}
 # create a data set with stadardized value
-new.data <- data.frame("Cereal" = "Apple Jack", 
-                       "size" = 28, 
-                       "sugar" = 12,
-                       "fat" = 0.5,
-                       "sodium" = 130)
+new.data <- data.frame(
+  "Cereal" = "Apple Jack",
+  "size" = 28,
+  "sugar" = 12,
+  "fat" = 0.5,
+  "sodium" = 130
+)
 
 # standardized the data
 new.data$sugar <- new.data$sugar / new.data$size
 new.data$fat <- new.data$fat / new.data$size
 new.data$sodium <- new.data$sodium / new.data$size
 
-new.data$size <- ((new.data$size - min(cereal$size_g)) 
-                    /(max(cereal$size_g) - min(cereal$size_g)))
+new.data$size <- ((new.data$size - min(cereal$size_g))
+/ (max(cereal$size_g) - min(cereal$size_g)))
 
-new.data$sugar <- ((new.data$sugar - min(cereal$sugar_g)) 
-                    /(max(cereal$sugar_g) - min(cereal$sugar_g)))
+new.data$sugar <- ((new.data$sugar - min(cereal$sugar_g))
+/ (max(cereal$sugar_g) - min(cereal$sugar_g)))
 
-new.data$fat <- ((new.data$fat - min(cereal$fat_g)) 
-                    /(max(cereal$fat_g) - min(cereal$fat_g)))
+new.data$fat <- ((new.data$fat - min(cereal$fat_g))
+/ (max(cereal$fat_g) - min(cereal$fat_g)))
 
 new.data$sodium <- ((new.data$sodium - min(cereal$sodium_mg))
-                    /(max(cereal$sodium_mg) - min(cereal$sodium_mg)))
+/ (max(cereal$sodium_mg) - min(cereal$sodium_mg)))
 
 # get model prediction for the given inputs
-aj_shelf_probs <- predict(model_cereal_shelves_linear, 
-                      newdata = new.data, 
-                      type = "probs")
+aj_shelf_probs <- predict(model_cereal_shelves_linear,
+  newdata = new.data,
+  type = "probs"
+)
 
 data.frame(pi.hat=round(aj_shelf_probs,5))
 ```
@@ -258,7 +272,7 @@ ggplot(model.preds,                                   # Draw ggplot2 plot
 (1 point) Estimate odds ratios and calculate corresponding confidence intervals for each explanatory variable. Relate your interpretations back to the plots constructed for this exercise. 
 
 ```{r produce odds ratios}
-odds_ratios <- 'fill this in'
+odds_ratios <- "fill this in"
 ```
 
 > 'Fill this in: What do you learn about each of these variables?' 
@@ -273,7 +287,7 @@ The researchers stated the following hypothesis:
 > *We hypothesized that negative interactions with romantic partners would be associated with alcohol consumption (and an increased desire to drink). We predicted that people with low trait self-esteem would drink more on days they experienced more negative relationship interactions compared with days during which they experienced fewer negative relationship interactions. The relation between drinking and negative relationship interactions should not be evident for individuals with high trait self-esteem.*
 
 ```{r read drinking data, message=FALSE}
-drinks <- read_csv('../data/short-questions/DeHartSimplified.csv')
+drinks <- read_csv("../data/short-questions/DeHartSimplified.csv")
 ```
 
 ## EDA 
