@@ -53,6 +53,7 @@ cereal$Cereal <- factor(cereal$Cereal)
 stand01 <- function(x) {
   (x - min(x)) / (max(x) - min(x))
 }
+
 cereal2 <- data.frame(
   Shelf = cereal$Shelf,
   size = cereal$size_g,
@@ -151,7 +152,8 @@ model_cereal_shelves_linear <- multinom(
   data = cereal2
 )
 
-# TODO: TA Clarify the quadratic here
+summary(model_cereal_shelves_linear)
+
 model_cereal_shelves_quadratic <- multinom(
   formula = Shelf ~ sugar
     + fat
@@ -163,7 +165,6 @@ model_cereal_shelves_quadratic <- multinom(
   data = cereal2
 )
 
-summary(model_cereal_shelves_linear)
 summary(model_cereal_shelves_quadratic)
 ```
 
@@ -266,16 +267,48 @@ ggplot(model.preds,                                   # Draw ggplot2 plot
   xlab("Normailized Sugar Content")
 ```
 
-> 'Fill this in: What message does your plot give?'
+> 'Fill this in: What message does your plot give?
+Lower sugar contents cereal has higher probability to be place on Shelf 3 and 4. Higher sugar contents have higher probability of being place on Shelf 2. There seem to be a low probability of cearel being placed on Shelf 1 despite of sugar content, however the trend does follow that of Shelf 2. This make sense because Shelf 1 and 2 are have a lower height than Shelf 3 and 4. High sugar contents cereal generally attract younger demographics than low sugar contents cereal, which older demographics might deem as healthier options.'
 
 ## Odds ratios 
 (1 point) Estimate odds ratios and calculate corresponding confidence intervals for each explanatory variable. Relate your interpretations back to the plots constructed for this exercise. 
 
 ```{r produce odds ratios}
-odds_ratios <- "fill this in"
+# get the standard deviations
+sd.cereal <- apply(X = cereal2[c('sugar', 'fat', 'sodium')], MARGIN = 2, FUN = sd)
+c.value <- round(sd.cereal, 4)
+cat("Explanatory Variables Standard Deviation: \n", c.value, "\n\n")
+
+# get the estimated parameters for each shelf level
+beta.hat2 <- coefficients(model_cereal_shelves_linear)[1,2:4]
+beta.hat3 <- coefficients(model_cereal_shelves_linear)[2,2:4]
+beta.hat4 <- coefficients(model_cereal_shelves_linear)[3,2:4]
+
+
+# Odds for j = 2 vs j = 1 (Shelf 2 vs Shelf 1)
+l1<-round(1/exp(c.value*beta.hat2 ), 4)
+
+# Odds for j = 3 vs j = 1 (Shelf 3 vs Shelf 1)
+l2<-round(1/exp(c.value*beta.hat3 ), 4)
+
+# Odds for j = 4 vs j = 1 (Shelf 4 vs Shelf 1)
+l3<-round(1/exp(c.value*beta.hat4 ), 4)
+
+
+odds_ratios <- rbind(l1, l2, l3)
+odds_ratios
 ```
 
-> 'Fill this in: What do you learn about each of these variables?' 
+> 'Fill this in: What do you learn about each of these variables?
+The odds of a cereal being place on Shelf 2 vs being place on Shelf 1 change by 0.4843 times for a 0.2692 decreases in sugar content holding all other variable constant. 
+The odds of a cereal being place on Shelf 3 vs being place on Shelf 1 change by 26.8071 times for a 0.2692 decreases in sugar content holding all other variable constant. 
+The odds of a cereal being place on Shelf 4 vs being place on Shelf 1 change by 21.4814 times for a 0.2692 decreases in sugar content holding all other variable constant. 
+The odds of a cereal being place on Shelf 2 vs being place on Shelf 1 change by 0.2966 times for a 0.299 decreases in fat content holding all other variable constant. 
+The odds of a cereal being place on Shelf 3 vs being place on Shelf 1 change by 1.1813 times for a 0.299 decreases in fat content holding all other variable constant. 
+The odds of a cereal being place on Shelf 4 vs being place on Shelf 1 change by 1.2971 times for a 0.299 decreases in fat content holding all other variable constant. 
+The odds of a cereal being place on Shelf 2 vs being place on Shelf 1 change by 55.7044 times for a 0.2298 decreases in sodium content holding all other variable constant.
+The odds of a cereal being place on Shelf 3 vs being place on Shelf 1 change by 311.0825 times for a 0.2298 decreases in sodium content holding all other variable constant.
+The odds of a cereal being place on Shelf 4 vs being place on Shelf 1 change by 290.0490 times for a 0.2298 decreases in sodium content holding all other variable constant.' 
 
 
 # Alcohol, self-esteem and negative relationship interactions (5 points)
