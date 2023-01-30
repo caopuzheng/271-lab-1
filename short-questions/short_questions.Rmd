@@ -333,17 +333,39 @@ drinks <- read_csv("../data/short-questions/DeHartSimplified.csv")
 (2 points) Conduct a thorough EDA of the data set, giving special attention to the relationships relevant to the researchers' hypotheses. Address the reasons for limiting the study to observations from only one day.
 
 ```{r drinking EDA}
-
+# limit the study to Saturday like the researchers
+saturday <- drinks[drinks$dayweek == 6, c(1, 4, 5, 6, 9, 10)]
+head(saturday)
+pairs( saturday )
 ```
 
 > 'Fill this in: What do you learn?' 
 
 ## Hypothesis One 
 (2 points) The researchers hypothesize that negative interactions with romantic partners would be associated with alcohol consumption and an increased desire to drink. Using appropriate models, evaluate the evidence that negative relationship interactions are associated with higher alcohol consumption and an increased desire to drink. 
-
+```{r}
+model.neg.relationship <- glm(formula = numall ~ nrel, 
+                              family = poisson(link="log"),
+                              data = saturday)
+summary(model.neg.relationship)
+```
+```{r}
+# LRT on negative relationship along with confident interval
+Anova(model.neg.relationship)
+```
 > 'Fill this in: What do you learn?' 
 
 ## Hypothesis Two
 (1 point) The researchers hypothesize that the relation between drinking and negative relationship interactions should not be evident for individuals with high trait self-esteem. Conduct an analysis to address this hypothesis.
 
+```{r}
+model.neg.relationship.rosn <- glm(formula = numall ~ nrel + rosn + nrel:rosn,  
+                              family = poisson(link="log"),
+                              data = saturday)
+summary(model.neg.relationship.rosn)
+```
+```{r}
+# LRT on negative relationship along with confident interval
+Anova(model.neg.relationship.rosn)
+```
 > 'Fill this in: What do you learn?' 
