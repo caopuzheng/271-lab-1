@@ -334,7 +334,7 @@ drinks <- read_csv("../data/short-questions/DeHartSimplified.csv")
 
 ```{r drinking EDA}
 # limit the study to Saturday like the researchers
-saturday <- drinks[drinks$dayweek == 6, c(1, 4, 5, 6, 9, 10)]
+saturday <- drinks[drinks$dayweek == 6, c(1, 4, 5, 6, 10, 11)]
 head(saturday)
 pairs( saturday )
 ```
