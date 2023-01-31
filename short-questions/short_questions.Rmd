@@ -286,19 +286,19 @@ beta.hat3 <- coefficients(model_cereal_shelves_linear)[2,2:4]
 beta.hat4 <- coefficients(model_cereal_shelves_linear)[3,2:4]
 
 # using confint to compute CI for each explanatory variable
-conf.beta <- confint ( object = model_cereal_shelves_linear, level = 0.95)
+conf.beta <- confint( object = model_cereal_shelves_linear, level = 0.95)
 
 # Odds for j = 2 vs j = 1 (Shelf 2 vs Shelf 1)
 OR_2_1<-round(1/exp( c.value*beta.hat2 ), 4)
-OR_CI_2_1<-round(exp(1/( c.value*conf.beta[2:4, 1:2, 1] )), 4)
+OR_CI_2_1<-round(1/(exp( c.value*conf.beta[2:4, 1:2, 1] )), 4)
 
 # Odds for j = 3 vs j = 1 (Shelf 3 vs Shelf 1)
 OR_3_1<-round(1/exp(c.value*beta.hat3 ), 4)
-OR_CI_3_1<-round(exp(1/( c.value*conf.beta[2:4, 1:2, 2]  )), 4)
+OR_CI_3_1<-round(1/(exp( c.value*conf.beta[2:4, 1:2, 2]  )), 4)
 
 # Odds for j = 4 vs j = 1 (Shelf 4 vs Shelf 1)
 OR_4_1<-round(1/exp(c.value*beta.hat4 ), 4)
-OR_CI_4_1<-round(exp(1/( c.value*conf.beta[2:4, 1:2, 3]  )), 4)
+OR_CI_4_1<-round(1/(exp( c.value*conf.beta[2:4, 1:2, 3]  )), 4)
 
 
 odds_ratios <- cbind(cbind(OR_2_1, OR_CI_2_1), cbind(OR_3_1, OR_CI_3_1), cbind(OR_4_1, OR_CI_4_1))
@@ -327,6 +327,9 @@ The researchers stated the following hypothesis:
 
 ```{r read drinking data, message=FALSE}
 drinks <- read_csv("../data/short-questions/DeHartSimplified.csv")
+df <- drinks %>%
+   dplyr::select(numall, prel, nrel, age, rosn, state, desired) 
+
 ```
 
 ## EDA 
@@ -334,6 +337,36 @@ drinks <- read_csv("../data/short-questions/DeHartSimplified.csv")
 
 ```{r drinking EDA}
 
+glimpse(df)
+summary(df)
+describe(df)
+# response variable
+
+
+
+# categorical variables
+p4 <- df %>%
+    ggplot(aes(x = rosn, y = ..prop.., group = 1)) + geom_bar(fill = "DarkBlue",
+    color = "black") + geom_text(stat = "count", aes(label = ..count..),
+    vjust = -1) + xlab("rosn") + ylab("Proportion") + ylim(0,
+    1)
+p4
+
+# metric variable: nrel, prel, negevent, posevent, age, desired, state
+p5 <- df %>%
+  ggplot(aes(rosn, nrel)) +
+  geom_boxplot(aes(fill = cut_number(nrel,5))) +
+  coord_flip() +
+  ggtitle("Subjects' negevent by rosn") +
+  theme(plot.title = element_text(lineheight=1, face="bold")) +
+  ylab("negevent") +
+  xlab(" rosn")
+
+p5 <- df %>%
+  ggplot(aes(rosn, nrel)) +
+  geom_point(mapping = aes(x = rosn, y = nrel))
+p5
+grid.arrange(p1, p2, p3, nrow = 1, ncol = 3)
 ```
 
 > 'Fill this in: What do you learn?' 
@@ -341,9 +374,26 @@ drinks <- read_csv("../data/short-questions/DeHartSimplified.csv")
 ## Hypothesis One 
 (2 points) The researchers hypothesize that negative interactions with romantic partners would be associated with alcohol consumption and an increased desire to drink. Using appropriate models, evaluate the evidence that negative relationship interactions are associated with higher alcohol consumption and an increased desire to drink. 
 
+```{r}
+mod.neg <- glm(formula = numall ~ nrel+prel+I(nrel*prel)+I(nrel^2)+I(prel^2), family = poisson(link = "log"), data = df)
+summary(mod.neg)
+Anova(mod.neg, test='LR')
+
+mod.desired <- glm(formula = desired ~ nrel+prel+I(nrel*prel)+I(nrel^2)+I(prel^2), data = df)
+summary(mod.desired)
+
+```
+
 > 'Fill this in: What do you learn?' 
 
 ## Hypothesis Two
 (1 point) The researchers hypothesize that the relation between drinking and negative relationship interactions should not be evident for individuals with high trait self-esteem. Conduct an analysis to address this hypothesis.
+
+```{r}
+mod.rosn <- glm(formula = rosn ~ nrel+numall+I(nrel*numall)+I(nrel^2)+I(numall^2), , data = df)
+summary(mod.rosn)
+Anova(mod.rosn, test='LR')
+
+```
 
 > 'Fill this in: What do you learn?' 
