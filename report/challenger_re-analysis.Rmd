@@ -77,6 +77,35 @@ challenger$failure_rate <- challenger$O.ring / challenger$Number
 
 (AKA EDA)
 
+```{r}
+p1 <- challenger %>%
+    ggplot(aes(x = Temp)) + geom_density(aes(y = ..density..,
+    color = factor(O.ring), fill = factor(O.ring)), alpha = 0.2) + ggtitle("Distribution of Temp") +
+    theme(plot.title = element_text(lineheight = 1, face = "bold")) +
+    xlab("Temp") + ylab("Density")
+
+p2 <- challenger %>%
+    ggplot(aes(x = Pressure)) + geom_density(aes(y = ..density..,
+    color = factor(O.ring), fill = factor(O.ring)), alpha = 0.2) + ggtitle("Distribution of Pressure") +
+    theme(plot.title = element_text(lineheight = 1, face = "bold")) +
+    xlab("Pressure") + ylab("Density")
+
+p3 <- challenger %>%
+    ggplot(aes(factor(O.ring), Temp)) + geom_boxplot(aes(fill = factor(O.ring))) +
+    coord_flip() + ggtitle("Temp by Number of Oring Incidents") +
+    theme(plot.title = element_text(lineheight = 1, face = "bold")) +
+    ylab("Temp") + xlab("O.ring")
+
+p4 <- challenger %>%
+    ggplot(aes(factor(O.ring), Pressure)) + geom_boxplot(aes(fill = factor(O.ring))) +
+    coord_flip() + ggtitle("Pressure by Number of Oring Incidents") +
+    theme(plot.title = element_text(lineheight = 1, face = "bold")) +
+    ylab("Pressure") + xlab("O.ring")
+
+grid.arrange(p1, p3, p2, p4, nrow = 2, ncol = 2)
+
+```
+
 # Analysis
 
 ## Reproducing Previous Analysis (10 points)
@@ -85,7 +114,18 @@ challenger$failure_rate <- challenger$O.ring / challenger$Number
 
 1.  Estimate the logistic regression model that the authors present in their report -- include the variables as linear terms in the model. Evaluate, using likelihood ratio tests, the statistical significance of each explanatory variable in the model. Evaluate, using the context and data understanding that you have created in the **Data** section of this report, the practical significance of each explanatory variable in the model.
 
+```{r}
+mod1 <- glm(formula=I(failure_rate/(1-failure_rate))~Temp+Pressure,data=challenger)
+summary(mod1)
+Anova(mod1)
+
+```
+
 2.  Dalal, Fowlkes, and Hoadley (1989) chose to remove `pressure` from the model based on their likelihood ratio tests. Critically evaluate, using your test results and understanding of the question and data, whether `pressure` should be included in the model, or instead, `pressure` should not be included in the model. Your report needs to make a determination, argue why it is most appropriate choice, and make note of how (if at all) the model results are affected by the choice of including or excluding `pressure`.
+
+```{r}
+Anova(mod1, test='LR')
+```
 
 ## Confidence Intervals (20 points)
 
@@ -102,6 +142,43 @@ Specific requirements for these plots:
 -   Use a temperature range of 31° to 81° on the x-axis even though the minimum temperature in the data set was 53°.\
 -   Include the 95% Wald confidence interval bands for $\pi$ on the plot. Describe, in your analysis of these plots, why the bands much wider for lower temperatures than for higher temperatures?
 
+```{r}
+mod2 <- glm(formula=failure_rate~Temp,
+            data=challenger)
+summary(mod2)
+mod3 <- glm(formula=failure_rate~Temp+I(Temp^2),
+            data=challenger)
+summary(mod3)
+# 2. determine if quadratic term is needed
+anova(mod2,mod3,test='Chisq')
+
+# 3. Graph pi vs Temp
+coef <- mod2$coefficients
+xx = c(1)
+z = coef[1]*xx[1]
+x <- challenger$Temp
+# Reproduce the graph overlaying the same result from the linear model as a comparison
+curve(expr = exp(z + coef[2]*x)/(1+exp(z + coef[2]*x)),
+    xlim = c(31, max(challenger$Temp)),
+    ylim = c(0,1),
+    col = "blue", 
+    main = expression(pi == frac(e^(z + coef[inc]*Temp), 1+e^(z+coef[inc]*Temp))),
+      xlab =  expression(Temp), ylab = expression(pi))
+par(new=TRUE)
+lm.coef <- mod2$coefficients
+lm.z <- lm.coef[1]*xx[1] 
+lines(challenger$Temp, lm.z + lm.coef[2]*x,col="green")
+# wald confidence interval
+vcov(mod2)
+wald.ci <- round(exp(challenger$Temp*mod2$coefficients[2] +challenger$Temp*qnorm(p=c(0.025, 0.975))*
+            sqrt(vcov(mod2)[2,2])),2)
+abline(h=wald.ci[1], lty="dotted", col='red')
+abline(h=wald.ci[2], lty="dotted", col='red')
+
+
+# 4. Graph Expected number of failures vs Temp
+
+```
 3.  The temperature was 31° at launch for the Challenger in 1986. Estimate the probability of an O-ring failure using this temperature, and compute a corresponding confidence interval. Discuss what assumptions need to be made in order to apply the inference procedures.
 
 ## Bootstrap Confidence Intervals (30 points)
