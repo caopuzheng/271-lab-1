@@ -257,14 +257,75 @@ Rather than relying on asymptotic properties, consider using a parametric bootst
 # for each model from the resulting data set:
 # compute the probability at each integer temeprature value (10 to 100)
 # compute the CI for the probability
-challenger_resampled <- sample(challenger, size = 23, replace = TRUE)
-mod_resample <- glm(formula=cbind(O.ring, Number-O.ring)~Temp,
-            family = binomial(link="logit"),
-            data=challenger_resampled)
-summary(mod_resample)
+temp <- NULL
+pi.hat <- NULL
+CI.lower <- NULL
+CI.upper <- NULL
 
+for (i in 1:100) {
+  challenger_resampled <- NULL
+  
+  # creating a resampled data from the original dataset with replacement
+  challenger_resampled <- challenger[sample(nrow(challenger), size=23, replace = TRUE), ]
+  
+  # construct a model from the new resampled dataset
+  mod_resample <- glm(formula=cbind(O.ring, Number-O.ring)~Temp,
+              family = binomial(link="logit"),
+              data=challenger_resampled)
+  output <- NULL
+  conf.lower <- NULL
+  conf.upper <- NULL
+  tprime <- NULL
+  # run the model though to obtain the output
+  for (t in 10:100) {
+    new.data <- data.frame('Temp' = t)
+    pred.prob <- predict(mod_resample, newdata = new.data, type='link', se = TRUE)
+    
+    # compute probability and CI
+    pi <- exp(pred.prob$fit)/(1+exp(pred.prob$fit))
+    linear.Wald.CI <- pred.prob$fit + qnorm(p=c(0.05, 0.95))*pred.prob$se
+    Wald.CI <- exp(linear.Wald.CI)/(1+exp(linear.Wald.CI))
+    # append data to array
+    tprime <- c(tprime, t)
+    output <- c(output, pi)
+    conf.lower <- c(conf.lower, Wald.CI[1])
+    conf.upper <- c(conf.upper, Wald.CI[2])
+  }
+  
+  # append each bootstrap run
+  temp <- c(temp, tprime)
+  pi.hat <- c(pi.hat, output)
+  CI.lower <- c(CI.lower, conf.lower)
+  CI.upper <- c(CI.upper, conf.upper)
+}
+
+bootstrap_ouptuts <- data.frame(temp = temp, pi.hat = pi.hat, 
+                                lower = CI.lower, upper = CI.upper)
+
+agg_tbl <- bootstrap_ouptuts %>% group_by(temp) %>% 
+               summarise(pi.hat = mean(pi.hat), 
+                         lower = mean(lower), 
+                         upper = mean(upper)) 
 ```
+```{r plot some QQ plots}
+# sliced the data on 1 temperature unit
+t <- 35
+sliced_df <- bootstrap_ouptuts[bootstrap_ouptuts$temp == t, ]
 
+# Draw two plots next to each other
+par(mfrow = c(1, 2))
+#normal_density <- dbinom(27, size=100, prob=0.25)
+zs <- seq(0, 1, 0.01)
+
+hist_ <- function(x, ...){
+  hist(x, breaks = 30, xlab = "Z", ylab = "",  yaxt='n', freq = FALSE, ...)
+  #lines(zs, normal_density, type = "l", col = "red", lwd = 2)
+}
+
+hist_(sliced_df$pi.hat, main = "Gaussian Distribution",xlim = c(0, 1))
+qqnorm(sliced_df$pi.hat)
+qqline(sliced_df$pi.hat, col = "blue", lwd = 2)
+```
 To produce a confidence interval, the authors used the 0.05 and 0.95 observed quantiles from the simulated distribution as their 90% confidence interval limits.
 
 Using the parametric bootstrap, compute 90% confidence intervals separately at each integer temperature between 10° and 100° Fahrenheit.
