@@ -37,7 +37,7 @@ Does a various physical conditions, in term of temperature and pressure, effect 
 #install.packages("sandwich")
 #install.packages("stargazer")
 #install.packages("mcprofile")
-
+#install.packages("Hmisc")
 library(tidyverse)
 library(patchwork)
 
@@ -51,21 +51,29 @@ library(sandwich)
 library(knitr)
 library(stargazer)
 library(mcprofile)
+library(Hmisc)
+library(gridExtra)
 ```
 
 ```{r read challenger data, message=FALSE}
 challenger <- read_csv("../data/raw/challenger.csv")
 ```
 ```{r tabular EDA, message = FALSE}
+head(challenger)
 glimpse(challenger)
 summary(challenger)
 describe(challenger)
 ```
-```{r compute probability data}
-# Since there are 6 Orings on a shuttle
-challenger$failure_rate <- challenger$O.ring / challenger$Number
+```{r Analysis of Response Variable}
+tab <- xtabs(~ O.ring, data = challenger)
+names(tab)
 
+x <- as.numeric(names(tab))
+
+plot(x, tab, type='bar', main="Number of O-Ring Failed by Flights",
+     xlab="Number of O-rings failed", ylab="Frequency")
 ```
+
 ## Description
 
 **Complete the following task. In your final submission, please remove this question prompt so that your report reads as a report.**
@@ -74,8 +82,6 @@ challenger$failure_rate <- challenger$O.ring / challenger$Number
 -   The authors use logistic regression to estimate the probability an O-ring will fail. In order to use this model, the authors needed to assume that each O-ring is independent for each launch. Discuss why this assumption is necessary and the potential problems with it. Note that a subsequent analysis helped to alleviate the authors' concerns about independence.
 
 ## Key Features
-
-(AKA EDA)
 
 ```{r}
 p1 <- challenger %>%
@@ -102,9 +108,11 @@ p4 <- challenger %>%
     theme(plot.title = element_text(lineheight = 1, face = "bold")) +
     ylab("Pressure") + xlab("O.ring")
 
-grid.arrange(p1, p3, p2, p4, nrow = 2, ncol = 2)
-
+grid.arrange(p1, p2)
+grid.arrange(p3, p4)
 ```
+
+For our study, we noted two features, temperature and pressure, that most likely affect the odds of O-rings failure on a space shuttle. From the distribution and box plot, the number of O-rings failed has a higher distribution at the lower temperature. In term of pressure, the distribution plots showed that 0 failed O-rings at both high and low pressure while 2 failed O-rings showed a uniform distribution. However, it is noted that this plot does somewhat show that the number of O-rings failed is higher for higher pressure and lower for lower pressure.  
 
 # Analysis
 
@@ -115,10 +123,15 @@ grid.arrange(p1, p3, p2, p4, nrow = 2, ncol = 2)
 1.  Estimate the logistic regression model that the authors present in their report -- include the variables as linear terms in the model. Evaluate, using likelihood ratio tests, the statistical significance of each explanatory variable in the model. Evaluate, using the context and data understanding that you have created in the **Data** section of this report, the practical significance of each explanatory variable in the model.
 
 ```{r}
-mod1 <- glm(formula=I(failure_rate/(1-failure_rate))~Temp+Pressure,data=challenger)
+# Since there are 6 Orings on a shuttle
+# We define the failure rates as number of O Rings Failed out of 6 O Rings
+# let's define some small epsilon to address log of 0
+
+mod1 <- glm(formula = cbind(O.ring, Number-O.ring) ~ Temp + Pressure, 
+            family = binomial(link="logit"),
+            data = challenger)
 summary(mod1)
 Anova(mod1)
-
 ```
 
 2.  Dalal, Fowlkes, and Hoadley (1989) chose to remove `pressure` from the model based on their likelihood ratio tests. Critically evaluate, using your test results and understanding of the question and data, whether `pressure` should be included in the model, or instead, `pressure` should not be included in the model. Your report needs to make a determination, argue why it is most appropriate choice, and make note of how (if at all) the model results are affected by the choice of including or excluding `pressure`.
@@ -143,44 +156,93 @@ Specific requirements for these plots:
 -   Include the 95% Wald confidence interval bands for $\pi$ on the plot. Describe, in your analysis of these plots, why the bands much wider for lower temperatures than for higher temperatures?
 
 ```{r}
-mod2 <- glm(formula=failure_rate~Temp,
+mod2 <- glm(formula=cbind(O.ring, Number-O.ring)~Temp,
+            family = binomial(link="logit"),
             data=challenger)
 summary(mod2)
-mod3 <- glm(formula=failure_rate~Temp+I(Temp^2),
+
+mod3 <- glm(formula=cbind(O.ring, Number-O.ring)~Temp+I(Temp^2),
+            family = binomial(link="logit"),
             data=challenger)
 summary(mod3)
+
 # 2. determine if quadratic term is needed
-anova(mod2,mod3,test='Chisq')
+anova(mod2, mod3,test='Chisq')
 
 # 3. Graph pi vs Temp
 coef <- mod2$coefficients
 xx = c(1)
 z = coef[1]*xx[1]
 x <- challenger$Temp
+
 # Reproduce the graph overlaying the same result from the linear model as a comparison
 curve(expr = exp(z + coef[2]*x)/(1+exp(z + coef[2]*x)),
     xlim = c(31, max(challenger$Temp)),
     ylim = c(0,1),
     col = "blue", 
-    main = expression(pi == frac(e^(z + coef[inc]*Temp), 1+e^(z+coef[inc]*Temp))),
+    main = expression(pi == frac(e^(z + coef[inc]*Temp), 
+                                 1+e^(z+coef[inc]*Temp))),
       xlab =  expression(Temp), ylab = expression(pi))
 par(new=TRUE)
 lm.coef <- mod2$coefficients
 lm.z <- lm.coef[1]*xx[1] 
 lines(challenger$Temp, lm.z + lm.coef[2]*x,col="green")
+
 # wald confidence interval
 vcov(mod2)
-wald.ci <- round(exp(challenger$Temp*mod2$coefficients[2] +challenger$Temp*qnorm(p=c(0.025, 0.975))*
-            sqrt(vcov(mod2)[2,2])),2)
+wald.ci <- round(exp(challenger$Temp*mod2$coefficients[2]+mod2$coefficients[1]) 
+                     + qnorm(p=c(0.025, 0.975))
+                     * sqrt(vcov(mod2)[2,2]), 2)
+
 abline(h=wald.ci[1], lty="dotted", col='red')
 abline(h=wald.ci[2], lty="dotted", col='red')
 
-
 # 4. Graph Expected number of failures vs Temp
+plotWald.CI <- function(tmin=31, tmax=81) {
+  fail.rings <- function(t) {
+    new.data <- data.frame('Temp' = t)
+    pred.prob <- predict(mod2, newdata = new.data, type='link')
+    pi <- exp(pred.prob)/(1+exp(pred.prob))
+    return(pi)
+  }
+  upper <- function(t) {
+    new.data <- data.frame('Temp' = t)
+    pred.prob <- predict(mod2, newdata = new.data,  type='link', se = TRUE)
+    upper.linear.ci <- pred.prob$fit + qnorm(p=0.975)*pred.prob$se
+    upper.ci <- exp(upper.linear.ci)/(1+exp(upper.linear.ci))
+    return(upper.ci)
+  }
+  
+  lower <- function(t) {
+    new.data <- data.frame('Temp' = t)
+    pred.prob <- predict(mod2, newdata = new.data,type='link', se= TRUE)
+    lower.lienar.ci <- pred.prob$fit + qnorm(p=0.025)*pred.prob$se
+    lowe.ci <- exp(lower.lienar.ci)/(1+exp(lower.lienar.ci))
+    return(lowe.ci)
+  }
+  
+  curve(fail.rings, from = tmin, to = tmax, xlab = "Tenmperature", ylab = "Est. Prob(Good)",
+        lwd = 2, col = "steelblue3", main= "Temperature Effect on Ring Failure")
+  curve(upper, from = tmin, to = tmax, xlab = "Tenmperature", ylab = "Est. Prob(Good)",
+        lwd = 1,  type="l", lty=2, col = "red", add=T)
+  curve(lower, from = tmin, to = tmax, xlab = "Tenmperature", ylab = "Est. Prob(Good)",
+        lwd = 1,  type="l", lty=2, col = "red", add=T)
+}
+plotWald.CI()
 
 ```
 3.  The temperature was 31° at launch for the Challenger in 1986. Estimate the probability of an O-ring failure using this temperature, and compute a corresponding confidence interval. Discuss what assumptions need to be made in order to apply the inference procedures.
+```{r}
+new.data <- data.frame('Temp' = 31)
+pred.prob <- predict(mod2, newdata = new.data, type='link', se = TRUE)
+pi <- exp(pred.prob$fit)/(1+exp(pred.prob$fit))
 
+linear.Wald.CI <- pred.prob$fit + qnorm(p=c(0.025, 0.975))*pred.prob$se
+Wald.CI <- exp(linear.Wald.CI)/(1+exp(linear.Wald.CI))
+
+ChallengerSpaceLaunch <- data.frame(pi.hat = pi, lower = Wald.CI[1], upper = Wald.CI[2] )
+ChallengerSpaceLaunch
+```
 ## Bootstrap Confidence Intervals (30 points)
 
 Rather than relying on asymptotic properties, consider using a parametric bootstrap, as did Dalal, Fowlkes and Hoadley. To do this:
@@ -188,6 +250,20 @@ Rather than relying on asymptotic properties, consider using a parametric bootst
 1.  Simulate a large number of data sets (n = 23 for each) by re-sampling with replacement from the data.
 2.  Estimate a model for each dataset.
 3.  Compute the effect at a specific temperature of interest.
+
+```{r resample with replacement}
+# TODO: create a for loop to do this,
+# for each data set:
+# for each model from the resulting data set:
+# compute the probability at each integer temeprature value (10 to 100)
+# compute the CI for the probability
+challenger_resampled <- sample(challenger, size = 23, replace = TRUE)
+mod_resample <- glm(formula=cbind(O.ring, Number-O.ring)~Temp,
+            family = binomial(link="logit"),
+            data=challenger_resampled)
+summary(mod_resample)
+
+```
 
 To produce a confidence interval, the authors used the 0.05 and 0.95 observed quantiles from the simulated distribution as their 90% confidence interval limits.
 
