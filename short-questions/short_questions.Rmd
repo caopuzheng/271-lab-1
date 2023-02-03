@@ -15,6 +15,7 @@ fontsize: 11pt
 # install.packages("GGally")
 library(tidyverse)
 library(patchwork)
+library(magrittr)
 library(MASS)
 library(ggplot2)
 library(GGally)
@@ -432,11 +433,7 @@ The researchers stated the following hypothesis:
 ```{r read drinking data, message=FALSE}
 drinks <- read_csv("../data/short-questions/DeHartSimplified.csv")
 
-head(drinks)
-
-drinks <- drinks %>%
-  dplyr::select(numall, desired, prel, nrel, rosn) %>%
-  drop_na()
+summary(drinks)
 ```
 
 ## EDA
@@ -444,34 +441,115 @@ drinks <- drinks %>%
 (2 points) Conduct a thorough EDA of the data set, giving special attention to the relationships relevant to the researchers' hypotheses.
 Address the reasons for limiting the study to observations from only one day.
 
-```{r drinking EDA 1}
-# TODO: rationalize why we are filtering for one day
-
-summary(drinks)
-pairs(drinks)
+```{r boxplot for day of the week}
+drinks %>%
+  dplyr::mutate(dow_factor = factor(dayweek)) %>%
+  dplyr::select(dow_factor, numall) %>%
+  drop_na() %>%
+  ggplot(aes(dow_factor, numall)) +
+  geom_boxplot(aes(dow_factor)) +
+  geom_dotplot(binaxis = "y", stackdir = "center", binwidth = 0.05) +
+  ggtitle("Number of Drinks by Day of Week") +
+  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
+  ylab("Number of Drinks") +
+  xlab("Day of Week")
 ```
 
-```{r}
-drinks %>%
+-   We can observe that the day of the week seem to have association with the number of drinks consumed, and Saturday tends to have the highest number of drinks in our sample.
+
+-   We will limit the study to observations from only Saturday, as the researchers stated that they are interested in the relationship between alcohol consumption and negative relationship interactions, and we need to remove the confounding effect of day of the week.
+
+```{r drinking EDA 1}
+sat_drinks <- drinks %>%
+  dplyr::filter(dayweek == 6) %>%
+  dplyr::select(numall, desired, prel, nrel, rosn) %>%
+  drop_na()
+
+pairs(sat_drinks)
+```
+
+```{r Univariate Analysis}
+h1 <- sat_drinks %>%
+  ggplot(aes(numall)) +
+  geom_histogram(bins = 20) +
+  ggtitle("Num of Drinks")
+
+h2 <- sat_drinks %>%
+  ggplot(aes(desired)) +
+  geom_histogram(bins = 20) +
+  ggtitle("Desire To Drink")
+
+h3 <- sat_drinks %>%
   ggplot(aes(nrel)) +
   geom_histogram(bins = 10) +
   ggtitle("Negative Relationship")
 
 
-drinks %>%
+h4 <- sat_drinks %>%
   ggplot(aes(rosn)) +
-  geom_histogram(bins = 30) +
-  ggtitle("trait self esteem")
+  geom_histogram(bins = 20) +
+  ggtitle("Trait Self-Esteem")
 
-# thoughts: both negative and positive - offsets?
-drinks %>%
-  ggplot(aes(x = nrel, y = numall, color = rosn > mean(rosn))) +
-  geom_point() +
-  coord_quickmap() +
-  ggtitle("positive ")
+(h1 | h2) / (h3 | h4)
+
+sat_drinks %>%
+  mutate(rounded_nrel = round(nrel, 0)) %>%
+  count(rounded_nrel) %>%
+  mutate(prop = round(prop.table(n), 2)) %>%
+  kable(col.names = c("Negative Relationship", "Count", "Proportion"))
 ```
 
-> 'Fill this in: What do you learn?'
+-   The number of drinks is right-skewed with a lower bound of 0, which is expected.
+-   The desire to drink seems balanced within our sample.
+-   Negative Relationship is heavily right -kewed, with 79% of the observations with 0 negative relationship. This might be a problem given the limited sample size. We might not be able to properly test this hypothesis.
+-   Trait self-esteem is left-skewed with a cap of 4.0 and min of 2.0.
+
+```{r Bivariante Analysis}
+p2_1 <- sat_drinks %>%
+  ggplot(aes(nrel, numall)) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE) +
+  ggtitle("Number Of Drinks by Negative Relationship") +
+  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
+  ylab("Number Of Drinks") +
+  xlab("Negative Relationship")
+
+p2_2 <- sat_drinks %>%
+  ggplot(aes(nrel, desired)) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE) +
+  ggtitle("Desire to Drink by Negative Relationship") +
+  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
+  ylab("Desire to Drink") +
+  xlab("Negative Relationship")
+
+p2_1 / p2_2
+```
+
+Given the limited number of observations that have more than 1 negative relationship reading, it's very hard to see a trend via the bi-variant visualization.
+
+```{r}
+
+sat_drinks <- sat_drinks %>%
+  mutate(high_self_esteem = rosn > median(rosn)) 
+
+p3_1 <- sat_drinks %>%
+  ggplot(aes(x = nrel, y = numall, color = high_self_esteem)) +
+  geom_point() +
+  coord_quickmap()
+# ggtitle("Negative Relationship and Self-Esteem vs Alcohol")
+
+
+p3_2 <- sat_drinks %>%
+  mutate(high_positive_relationship = prel > median(prel)) %>%
+  ggplot(aes(x = nrel, y = numall, color = high_positive_relationship)) +
+  geom_point() +
+  coord_quickmap()
+# ggtitle("Negative and Positive Relationship vs Alcohol")
+
+p3_1 | p3_2
+# TODO: add lables
+```
 
 ## Hypothesis One
 
@@ -479,14 +557,19 @@ drinks %>%
 Using appropriate models, evaluate the evidence that negative relationship interactions are associated with higher alcohol consumption and an increased desire to drink.
 
 ```{r}
-# TODO: ask what the question really wants us to model
 
-mod_num_all <- drinks %>% glm(formula = numall ~ nrel, data = ., family = poisson(link = log))
+mod_num_all <-
+  sat_drinks %>% glm(formula = numall ~ nrel,
+                     family = poisson(link = log))
+
 summary(mod_num_all)
 ```
 
 ```{r}
-mod_desired <- drinks %>% glm(formula = desired ~ nrel, data = .)
+
+mod_desired <-
+  sat_drinks %>% glm(formula = desired ~ nrel, data = .)
+
 summary(mod_desired)
 ```
 
@@ -498,23 +581,10 @@ summary(mod_desired)
 Conduct an analysis to address this hypothesis.
 
 ```{r}
-p2 <- drinks %>%
-  ggplot(aes(numall, rosn)) +
-  geom_boxplot(aes(fill = rosn)) +
-  coord_flip() +
-  ggtitle("GPA by Admission") +
-  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
-  ylab("College GPA") +
-  xlab("Admission")
-```
 
-```{r}
-# TODO: try classify the rosn into multiple categories (2 - 3), see if the groups vs base would have significant
-model.neg.relationship.rosn <- glm(
-  formula = numall ~ nrel + rosn + nrel:rosn,
-  family = poisson(link = "log"),
-  data = drinks
-)
+model.neg.relationship.rosn <- sat_drinks %>%
+  glm(formula = numall ~ nrel + rosn + nrel:rosn,
+      family = poisson(link = "log"))
 summary(model.neg.relationship.rosn)
 ```
 
