@@ -40,6 +40,8 @@ Does a various physical conditions, in term of temperature and pressure, effect 
 
 library(tidyverse)
 library(patchwork)
+library(gridExtra)
+library(Hmisc)
 
 # multinomial regression
 library(nnet)
@@ -115,9 +117,11 @@ grid.arrange(p1, p3, p2, p4, nrow = 2, ncol = 2)
 1.  Estimate the logistic regression model that the authors present in their report -- include the variables as linear terms in the model. Evaluate, using likelihood ratio tests, the statistical significance of each explanatory variable in the model. Evaluate, using the context and data understanding that you have created in the **Data** section of this report, the practical significance of each explanatory variable in the model.
 
 ```{r}
-mod1 <- glm(formula=I(failure_rate/(1-failure_rate))~Temp+Pressure,data=challenger)
+mod1 <- glm(formula=failure_rate~Temp+Pressure,
+            data=challenger,
+            family=binomial(link="logit"))
+
 summary(mod1)
-Anova(mod1)
 
 ```
 
@@ -143,43 +147,109 @@ Specific requirements for these plots:
 -   Include the 95% Wald confidence interval bands for $\pi$ on the plot. Describe, in your analysis of these plots, why the bands much wider for lower temperatures than for higher temperatures?
 
 ```{r}
+##############################################################################
+# Estimate the logistic regression model
+##############################################################################
 mod2 <- glm(formula=failure_rate~Temp,
-            data=challenger)
+            data=challenger,
+            family=binomial(link="logit"))
 summary(mod2)
 mod3 <- glm(formula=failure_rate~Temp+I(Temp^2),
-            data=challenger)
+            data=challenger,
+            family=binomial(link="logit"))
 summary(mod3)
-# 2. determine if quadratic term is needed
+```
+```{r}
+##############################################################################
+# 2. Determine if quadratic term is needed
+##############################################################################
 anova(mod2,mod3,test='Chisq')
-
-# 3. Graph pi vs Temp
-coef <- mod2$coefficients
-xx = c(1)
-z = coef[1]*xx[1]
-x <- challenger$Temp
+```
+```{r}
+##############################################################################
+# 3. Pi vs Temp
+##############################################################################
+mod.beta <- mod2$coefficients
 # Reproduce the graph overlaying the same result from the linear model as a comparison
-curve(expr = exp(z + coef[2]*x)/(1+exp(z + coef[2]*x)),
+curve(expr = exp(mod.beta[1] + mod.beta[2]*x)/(1+exp(mod.beta[1] + mod.beta[2]*x)),
     xlim = c(31, max(challenger$Temp)),
     ylim = c(0,1),
     col = "blue", 
-    main = expression(pi == frac(e^(z + coef[inc]*Temp), 1+e^(z+coef[inc]*Temp))),
-      xlab =  expression(Temp), ylab = expression(pi))
+    main = expression(pi == frac(e^(mod.beta[1] + mod.beta*Temp), 1+e^(mod.beta[1] + mod.beta*Temp))),
+    xlab =  expression(Temp), ylab = expression(pi))
 par(new=TRUE)
-lm.coef <- mod2$coefficients
-lm.z <- lm.coef[1]*xx[1] 
-lines(challenger$Temp, lm.z + lm.coef[2]*x,col="green")
-# wald confidence interval
-vcov(mod2)
-wald.ci <- round(exp(challenger$Temp*mod2$coefficients[2] +challenger$Temp*qnorm(p=c(0.025, 0.975))*
-            sqrt(vcov(mod2)[2,2])),2)
-abline(h=wald.ci[1], lty="dotted", col='red')
-abline(h=wald.ci[2], lty="dotted", col='red')
 
+# calculate true wald confidence interval at temperature
+wald.CI.true.coverage = function(mod, temp) {
+  alpha = 0.5
+  predict.data <- data.frame(Temp = temp)
+  linear.pred = predict(object = mod, newdata = predict.data, type = "link", se = TRUE)
+  pi.hat = exp(linear.pred$fit)/(1+exp(linear.pred$fit))
+  CI.lin.pred = linear.pred$fit + qnorm(p = c(alpha/2, 1-alpha/2))*linear.pred$se.fit
+  CI.pi = exp(CI.lin.pred)/(1+exp(CI.lin.pred))
+  wald.df = round(data.frame(temp, lower=CI.pi[1], upper=CI.pi[2]),4)
+  return(wald.df)
+}
 
+temp.seq = seq(31, 81, by=1)
+wald.CI.true.matrix = matrix(data=NA,nrow=length(temp.seq),ncol=3)
+counter=1
+for (temp in temp.seq) {
+  wald.df2 = wald.CI.true.coverage(mod2, temp) 
+  wald.CI.true.matrix[counter,] = c(temp, wald.df2$lower, wald.df2$upper)
+  counter = counter+1
+}
+wald.CI.true.matrix[1:5,]
+# plot lower bound
+lines(x=temp.seq,
+     y=wald.CI.true.matrix[,2],
+     ylim=c(0,1),
+     type="l",
+     lty="dotted",
+     col="red")
+# plot upper bound
+lines(x=temp.seq,
+     y=wald.CI.true.matrix[,3],
+     ylim=c(0,1),
+     type="l",
+     lty="dotted",
+     col="red")
+##############################################################################
 # 4. Graph Expected number of failures vs Temp
+##############################################################################
+curve(expr = 6*exp(mod.beta[1] + mod.beta[2]*x)/(1+exp(mod.beta[1] + mod.beta[2]*x)),
+    xlim = c(31, max(challenger$Temp)),
+    ylim = c(0,6),
+    col = "blue", 
+    xlab =  expression(Temp), ylab = "Expected Number of Failures")
+par(new=TRUE)
 
 ```
+> Intervals are wide for temperatures less than 65F is wide and short for temperatures greater than 65F. This is expected, because most of the data have temperatures greater than 65F. The estimated interval for temperature equal to 30F is about (1,6); this illustrates that we have high variability for the expected number of incidents.
+
+
 3.  The temperature was 31° at launch for the Challenger in 1986. Estimate the probability of an O-ring failure using this temperature, and compute a corresponding confidence interval. Discuss what assumptions need to be made in order to apply the inference procedures.
+
+```{r}
+
+library(mcprofile)
+params = dim(summary(mod2)$coefficients)[1]
+predict.data = matrix(data=c(1,31),
+                       nrow=1,
+                       ncol=params)
+linear.combo = mcprofile(object = mod2, CM=predict.data)
+mroz_logit_profile = confint(linear.combo, level=0.95)
+mroz_logit_ci = exp(mroz_logit_profile$confint)/(1+exp(mroz_logit_profile$confint))
+mroz_logit_estimate = exp(mroz_logit_profile$estimate)/(1+exp(mroz_logit_profile$estimate))
+result.profile_lr = data.frame(estimate=mroz_logit_estimate,
+                               lower=mroz_logit_ci$lower,
+                               upper=mroz_logit_ci$upper)
+result.profile_lr
+
+
+
+```
+
 
 ## Bootstrap Confidence Intervals (30 points)
 
