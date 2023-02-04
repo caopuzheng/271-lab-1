@@ -38,6 +38,8 @@ Does a various physical conditions, in term of temperature and pressure, effect 
 #install.packages("stargazer")
 #install.packages("mcprofile")
 #install.packages("Hmisc")
+#install.packages("patchwork")
+#install.packages("car")
 library(tidyverse)
 library(patchwork)
 library(gridExtra)
@@ -60,12 +62,14 @@ library(gridExtra)
 ```{r read challenger data, message=FALSE}
 challenger <- read_csv("../data/raw/challenger.csv")
 ```
+
 ```{r tabular EDA, message = FALSE}
 head(challenger)
 glimpse(challenger)
 summary(challenger)
 describe(challenger)
 ```
+
 ```{r Analysis of Response Variable}
 tab <- xtabs(~ O.ring, data = challenger)
 names(tab)
@@ -125,7 +129,6 @@ For our study, we noted two features, temperature and pressure, that most likely
 1.  Estimate the logistic regression model that the authors present in their report -- include the variables as linear terms in the model. Evaluate, using likelihood ratio tests, the statistical significance of each explanatory variable in the model. Evaluate, using the context and data understanding that you have created in the **Data** section of this report, the practical significance of each explanatory variable in the model.
 
 ```{r}
-<<<<<<< HEAD
 # Since there are 6 Orings on a shuttle
 # We define the failure rates as number of O Rings Failed out of 6 O Rings
 # let's define some small epsilon to address log of 0
@@ -134,15 +137,14 @@ mod1 <- glm(formula = cbind(O.ring, Number-O.ring) ~ Temp + Pressure,
             family = binomial(link="logit"),
             data = challenger)
 summary(mod1)
+
 Anova(mod1)
-=======
 mod1 <- glm(formula=failure_rate~Temp+Pressure,
             data=challenger,
             family=binomial(link="logit"))
 
 summary(mod1)
 
->>>>>>> a6d9c701f164e79f25aee0f6243a6896ad608776
 ```
 
 2.  Dalal, Fowlkes, and Hoadley (1989) chose to remove `pressure` from the model based on their likelihood ratio tests. Critically evaluate, using your test results and understanding of the question and data, whether `pressure` should be included in the model, or instead, `pressure` should not be included in the model. Your report needs to make a determination, argue why it is most appropriate choice, and make note of how (if at all) the model results are affected by the choice of including or excluding `pressure`.
@@ -167,7 +169,6 @@ Specific requirements for these plots:
 -   Include the 95% Wald confidence interval bands for $\pi$ on the plot. Describe, in your analysis of these plots, why the bands much wider for lower temperatures than for higher temperatures?
 
 ```{r}
-<<<<<<< HEAD
 mod2 <- glm(formula=cbind(O.ring, Number-O.ring)~Temp,
             family = binomial(link="logit"),
             data=challenger)
@@ -187,7 +188,7 @@ xx = c(1)
 z = coef[1]*xx[1]
 x <- challenger$Temp
 
-=======
+
 ##############################################################################
 # Estimate the logistic regression model
 ##############################################################################
@@ -206,18 +207,17 @@ summary(mod3)
 ##############################################################################
 anova(mod2,mod3,test='Chisq')
 ```
+
 ```{r}
 ##############################################################################
 # 3. Pi vs Temp
 ##############################################################################
 mod.beta <- mod2$coefficients
->>>>>>> a6d9c701f164e79f25aee0f6243a6896ad608776
 # Reproduce the graph overlaying the same result from the linear model as a comparison
 curve(expr = exp(mod.beta[1] + mod.beta[2]*x)/(1+exp(mod.beta[1] + mod.beta[2]*x)),
     xlim = c(31, max(challenger$Temp)),
     ylim = c(0,1),
     col = "blue", 
-<<<<<<< HEAD
     main = expression(pi == frac(e^(z + coef[inc]*Temp), 
                                  1+e^(z+coef[inc]*Temp))),
       xlab =  expression(Temp), ylab = expression(pi))
@@ -235,42 +235,6 @@ wald.ci <- round(exp(challenger$Temp*mod2$coefficients[2]+mod2$coefficients[1])
 abline(h=wald.ci[1], lty="dotted", col='red')
 abline(h=wald.ci[2], lty="dotted", col='red')
 
-# 4. Graph Expected number of failures vs Temp
-plotWald.CI <- function(tmin=31, tmax=81) {
-  fail.rings <- function(t) {
-    new.data <- data.frame('Temp' = t)
-    pred.prob <- predict(mod2, newdata = new.data, type='link')
-    pi <- exp(pred.prob)/(1+exp(pred.prob))
-    return(pi)
-  }
-  upper <- function(t) {
-    new.data <- data.frame('Temp' = t)
-    pred.prob <- predict(mod2, newdata = new.data,  type='link', se = TRUE)
-    upper.linear.ci <- pred.prob$fit + qnorm(p=0.975)*pred.prob$se
-    upper.ci <- exp(upper.linear.ci)/(1+exp(upper.linear.ci))
-    return(upper.ci)
-  }
-  
-  lower <- function(t) {
-    new.data <- data.frame('Temp' = t)
-    pred.prob <- predict(mod2, newdata = new.data,type='link', se= TRUE)
-    lower.lienar.ci <- pred.prob$fit + qnorm(p=0.025)*pred.prob$se
-    lowe.ci <- exp(lower.lienar.ci)/(1+exp(lower.lienar.ci))
-    return(lowe.ci)
-  }
-  
-  curve(fail.rings, from = tmin, to = tmax, xlab = "Tenmperature", ylab = "Est. Prob(Good)",
-        lwd = 2, col = "steelblue3", main= "Temperature Effect on Ring Failure")
-  curve(upper, from = tmin, to = tmax, xlab = "Tenmperature", ylab = "Est. Prob(Good)",
-        lwd = 1,  type="l", lty=2, col = "red", add=T)
-  curve(lower, from = tmin, to = tmax, xlab = "Tenmperature", ylab = "Est. Prob(Good)",
-        lwd = 1,  type="l", lty=2, col = "red", add=T)
-}
-plotWald.CI()
-=======
-    main = expression(pi == frac(e^(mod.beta[1] + mod.beta*Temp), 1+e^(mod.beta[1] + mod.beta*Temp))),
-    xlab =  expression(Temp), ylab = expression(pi))
-par(new=TRUE)
 
 # calculate true wald confidence interval at temperature
 wald.CI.true.coverage = function(mod, temp) {
@@ -293,6 +257,7 @@ for (temp in temp.seq) {
   counter = counter+1
 }
 wald.CI.true.matrix[1:5,]
+
 # plot lower bound
 lines(x=temp.seq,
      y=wald.CI.true.matrix[,2],
@@ -300,6 +265,7 @@ lines(x=temp.seq,
      type="l",
      lty="dotted",
      col="red")
+
 # plot upper bound
 lines(x=temp.seq,
      y=wald.CI.true.matrix[,3],
@@ -307,6 +273,7 @@ lines(x=temp.seq,
      type="l",
      lty="dotted",
      col="red")
+
 ##############################################################################
 # 4. Graph Expected number of failures vs Temp
 ##############################################################################
@@ -316,7 +283,6 @@ curve(expr = 6*exp(mod.beta[1] + mod.beta[2]*x)/(1+exp(mod.beta[1] + mod.beta[2]
     col = "blue", 
     xlab =  expression(Temp), ylab = "Expected Number of Failures")
 par(new=TRUE)
->>>>>>> a6d9c701f164e79f25aee0f6243a6896ad608776
 
 ```
 > Intervals are wide for temperatures less than 65F is wide and short for temperatures greater than 65F. This is expected, because most of the data have temperatures greater than 65F. The estimated interval for temperature equal to 30F is about (1,6); this illustrates that we have high variability for the expected number of incidents.
@@ -331,14 +297,11 @@ pi <- exp(pred.prob$fit)/(1+exp(pred.prob$fit))
 linear.Wald.CI <- pred.prob$fit + qnorm(p=c(0.025, 0.975))*pred.prob$se
 Wald.CI <- exp(linear.Wald.CI)/(1+exp(linear.Wald.CI))
 
-<<<<<<< HEAD
 ChallengerSpaceLaunch <- data.frame(pi.hat = pi, lower = Wald.CI[1], upper = Wald.CI[2] )
 ChallengerSpaceLaunch
 ```
-=======
-```{r}
 
-library(mcprofile)
+```{r}
 params = dim(summary(mod2)$coefficients)[1]
 predict.data = matrix(data=c(1,31),
                        nrow=1,
@@ -351,8 +314,6 @@ result.profile_lr = data.frame(estimate=mroz_logit_estimate,
                                lower=mroz_logit_ci$lower,
                                upper=mroz_logit_ci$upper)
 result.profile_lr
-
-
 
 ```
 
@@ -422,6 +383,7 @@ agg_tbl <- bootstrap_ouptuts %>% group_by(temp) %>%
                          lower = mean(lower), 
                          upper = mean(upper)) 
 ```
+
 ```{r plot some QQ plots}
 # sliced the data on 1 temperature unit
 t <- 35
