@@ -132,6 +132,8 @@ For our study, we noted two features, temperature and pressure, that most likely
 # Since there are 6 Orings on a shuttle
 # We define the failure rates as number of O Rings Failed out of 6 O Rings
 # let's define some small epsilon to address log of 0
+# do stuff
+challenger$failure_rate <- challenger$O.ring/challenger$Number
 
 mod1 <- glm(formula = cbind(O.ring, Number-O.ring) ~ Temp + Pressure, 
             family = binomial(link="logit"),
@@ -139,6 +141,7 @@ mod1 <- glm(formula = cbind(O.ring, Number-O.ring) ~ Temp + Pressure,
 summary(mod1)
 
 Anova(mod1)
+
 mod1 <- glm(formula=failure_rate~Temp+Pressure,
             data=challenger,
             family=binomial(link="logit"))
@@ -169,6 +172,9 @@ Specific requirements for these plots:
 -   Include the 95% Wald confidence interval bands for $\pi$ on the plot. Describe, in your analysis of these plots, why the bands much wider for lower temperatures than for higher temperatures?
 
 ```{r}
+##############################################################################
+# Estimate the logistic regression model
+##############################################################################
 mod2 <- glm(formula=cbind(O.ring, Number-O.ring)~Temp,
             family = binomial(link="logit"),
             data=challenger)
@@ -180,7 +186,7 @@ mod3 <- glm(formula=cbind(O.ring, Number-O.ring)~Temp+I(Temp^2),
 summary(mod3)
 
 # 2. determine if quadratic term is needed
-anova(mod2, mod3,test='Chisq')
+anova(mod2, mod3, test='Chisq')
 
 # 3. Graph pi vs Temp
 coef <- mod2$coefficients
@@ -222,18 +228,6 @@ curve(expr = exp(mod.beta[1] + mod.beta[2]*x)/(1+exp(mod.beta[1] + mod.beta[2]*x
                                  1+e^(z+coef[inc]*Temp))),
       xlab =  expression(Temp), ylab = expression(pi))
 par(new=TRUE)
-lm.coef <- mod2$coefficients
-lm.z <- lm.coef[1]*xx[1] 
-lines(challenger$Temp, lm.z + lm.coef[2]*x,col="green")
-
-# wald confidence interval
-vcov(mod2)
-wald.ci <- round(exp(challenger$Temp*mod2$coefficients[2]+mod2$coefficients[1]) 
-                     + qnorm(p=c(0.025, 0.975))
-                     * sqrt(vcov(mod2)[2,2]), 2)
-
-abline(h=wald.ci[1], lty="dotted", col='red')
-abline(h=wald.ci[2], lty="dotted", col='red')
 
 
 # calculate true wald confidence interval at temperature
@@ -318,7 +312,6 @@ result.profile_lr
 ```
 
 
->>>>>>> a6d9c701f164e79f25aee0f6243a6896ad608776
 ## Bootstrap Confidence Intervals (30 points)
 
 Rather than relying on asymptotic properties, consider using a parametric bootstrap, as did Dalal, Fowlkes and Hoadley. To do this:
