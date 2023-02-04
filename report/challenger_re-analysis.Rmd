@@ -132,6 +132,7 @@ For our study, we noted two features, temperature and pressure, that most likely
 # Since there are 6 Orings on a shuttle
 # We define the failure rates as number of O Rings Failed out of 6 O Rings
 # let's define some small epsilon to address log of 0
+# do stuff
 challenger$failure_rate <- challenger$O.ring/challenger$Number
 
 mod1 <- glm(formula = cbind(O.ring, Number-O.ring) ~ Temp + Pressure, 
