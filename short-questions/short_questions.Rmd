@@ -8,6 +8,8 @@ output:
 fontsize: 11pt
 ---
 
+\newpage
+
 ```{r load packages for homework 2, message=FALSE}
 # install.packages("MASS")
 # install.packages("ggplot2")
@@ -32,6 +34,8 @@ theme_set(theme_minimal())
 knitr::opts_chunk$set(tidy.opts = list(width_cutoff = 100), tidy = TRUE)
 knitr::opts_chunk$set(message = FALSE)
 ```
+
+\newpage
 
 # Strategic Placement of Products in Grocery Stores (5 points)
 
@@ -73,6 +77,8 @@ cereal2 <- data.frame(
 )
 summary(cereal2)
 ```
+
+\newpage
 
 ```{r boxplots, fig.height=4, fig.width=5}
 p1 <- cereal2 %>%
@@ -143,6 +149,8 @@ grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
 >
 > 2)  Shelf 1 has the highest sodium'
 
+\newpage
+
 ```{r parallel coordiantes plot}
 # for ease of visualization, Adding shelf here.
 cols <- c("red", "green", "blue", "black")
@@ -171,6 +179,8 @@ legend("topright",
 > Yes based on the box plot, there are a clear visualization differences between the mean and variance for each individual contents among the shelves.
 >
 > For example, Shelf 2 generally higher sugar/fat content per serving size, which could extract a lot more sales among younger children.'
+
+\newpage
 
 ## Evaluate Ordinal vs. Categorical
 
@@ -202,6 +212,8 @@ model_cereal_shelves_linear <- multinom(
 summary(model_cereal_shelves_linear)
 ```
 
+\newpage
+
 ```{r}
 model_cereal_shelves_cross <- multinom(
   formula = factor(Shelf) ~ sugar
@@ -222,6 +234,16 @@ lrt_cereal_main_effects <- Anova(model_cereal_shelves_linear, test = "LR")
 lrt_cereal_main_effects
 ```
 
+> For the first model with a linear effect, we are using a LRT test for each individual explanatory variable.
+>
+> The resulted p-values for sugar and sodium contents are both lower than alpha = 0.001, or at 99.99% confidence interval and visualized by three asterisk.
+> This suggest that sugar and sodium content are statistically significant to the model.
+>
+> The fat content estimated parameter resulted in a p-value of 0.1522, which is higher than all proposed alpha value.
+> Thus, fat content is not statistically significant to the model.
+
+\newpage
+
 ```{r likelihood ratio tests: interaction effects}
 lrt_cereal_quadratic_effects <- anova(model_cereal_shelves_linear,
   model_cereal_shelves_cross,
@@ -230,21 +252,13 @@ lrt_cereal_quadratic_effects <- anova(model_cereal_shelves_linear,
 lrt_cereal_quadratic_effects
 ```
 
-> 'Fill in: Write about what you learn as a result of these tests, using inline code evaluation.
->
-> First Test: For the first model with a linear effect, we are using a LRT test for each individual explanatory variable.
->
-> The resulted p-values for sugar and sodium contents are both lower than alpha = 0.001, or at 99.99% confidence interval and visualized by three asterisk.
-> This suggest that sugar and sodium content are statistically significant to the model.
->
-> The fat content estimated parameter resulted in a p-value of 0.1522, which is higher than all proposed alpha value.
-> Thus, fat content is not statistically significant to the model.
->
-> Second Test: For the second model with quadratic effect.
+> For the second model with quadratic effect.
 > We are using the LRT for a Null hypothesis that the interaction terms among the explanatory variable have estimated parameters of 0, and an alternate hypothesis that they are not.
 > The test resulted in a p-value of 0.3239 from a chi-squared distribution.
 >
 > Since the p-value is greater than the alpha = 0.05 or at 95% confidence level, the interaction terms are not statistically significant.
+
+\newpage
 
 ## Where do you think Apple Jacks will be placed?
 
@@ -267,7 +281,7 @@ stand02 <- function(new_data, original_data, col_names) {
     min_val <- min(original_data[col_name] / original_data["size_g"])
     max_val <- max(original_data[col_name] / original_data["size_g"])
 
-    new_col_name <- str_split_i(col_name, "_", 1)
+    new_col_name <- substring(col_name, 0, unlist(gregexpr('_', col_name))[1] - 1)
     new_data[new_col_name] <- (new_data[col_name] / new_data["size_g"] - min_val) / (max_val - min_val)
   }
   return(new_data)
@@ -290,6 +304,8 @@ data.frame(pi.hat = round(aj_shelf_probs, 3) * 100)
 > Based on the outputs, Shelf 2 has the highest probability of 47.2% follows by Shelf 4 with a probability of 27.4%.
 >
 > Since Shelf 2 has the highest probability, Apple Jack is predicted to be placed on Shelf 2.
+
+\newpage
 
 ## Figure 3.3
 
@@ -352,10 +368,12 @@ ggplot(
 > Lower sugar contents cereal has higher probability to be place on Shelf 3 and 4.
 > Higher sugar contents have higher probability of being place on Shelf 2.
 >
-> There seem to be a low probability of cearels being placed on Shelf 1 despite of sugar content, however the trend does follow that of Shelf 2.
+> There seem to be a low probability of cereals being placed on Shelf 1 despite of sugar content, however the trend does follow that of Shelf 2.
 > This make sense because Shelf 1 and 2 are have a lower height than Shelf 3 and 4.
 >
 > High sugar contents cereal generally attract younger demographics than low sugar contents cereal, which older demographics might deem as healthier options.'
+
+\newpage
 
 ## Odds ratios
 
@@ -366,7 +384,6 @@ Relate your interpretations back to the plots constructed for this exercise.
 # get the standard deviations
 sd.cereal <- apply(X = cereal2[c("sugar", "fat", "sodium")], MARGIN = 2, FUN = sd)
 c.value <- round(sd.cereal, 4)
-cat("Explanatory Variables Standard Deviation: \n", c.value, "\n\n")
 
 # get the estimated parameters for each shelf level
 beta.hat2 <- coefficients(model_cereal_shelves_linear)[1, 2:4]
@@ -394,7 +411,7 @@ odds_ratios
 
 > 'Fill this in: What do you learn about each of these variables?
 >
-> Considering only the **statistically significant results**, we have the following findings:
+> Considering only the **statistically significant results at 95%** (whose confidence interval doesn't contain 1 in it), we have the following findings:
 >
 > For sugar:
 >
@@ -418,6 +435,8 @@ odds_ratios
 >
 > Overall, it seem shelf 1 have very high sodium cereals, which is inline with our observation - thus increasing the level of sodium would make it very likely to be on shelf 1 rather than other shelves.
 
+\newpage
+
 # Alcohol, self-esteem and negative relationship interactions (5 points)
 
 Read the example **'Alcohol Consumption'** in chapter 4.2.2 of the textbook(Bilder and Loughin's "Analysis of Categorical Data with R).
@@ -425,6 +444,8 @@ This is based on a study in which moderate-to-heavy drinkers (defined as at leas
 Participants also completed a variety of rating scales covering daily events in their lives and items related to self-esteem.
 The data are given in the *DeHartSimplified.csv* data set.
 Questions 24-26 of chapter 3 of the textbook also relate to this data set and give definitions of its variables: the number of drinks consumed (`numall`), positive romantic-relationship events (`prel`), negative romantic-relationship events (`nrel`), age (`age`), trait (long-term) self-esteem (`rosn`), state (short-term) self-esteem (`state`).
+
+\newpage
 
 The researchers stated the following hypothesis:
 
@@ -436,17 +457,12 @@ drinks <- read_csv("../data/short-questions/DeHartSimplified.csv")
 summary(drinks)
 ```
 
+\newpage
+
 ## EDA
-(2 points) Conduct a thorough EDA of the data set, giving special attention to the relationships relevant to the researchers' hypotheses. Address the reasons for limiting the study to observations from only one day.
 
-
-```{r drinking EDA}
-# limit the study to Saturday like the researchers
-saturday <- drinks[drinks$dayweek == 6, c(1, 4, 5, 6, 10, 11)]
-head(saturday)
-pairs( saturday )
-```
-
+(2 points) Conduct a thorough EDA of the data set, giving special attention to the relationships relevant to the researchers' hypotheses.
+Address the reasons for limiting the study to observations from only one day.
 
 ```{r boxplot for day of the week}
 drinks %>%
@@ -463,22 +479,9 @@ drinks %>%
 ```
 
 -   We can observe that the day of the week seem to have association with the number of drinks consumed, and Saturday tends to have the highest number of drinks in our sample.
-
-
-## Hypothesis One 
-(2 points) The researchers hypothesize that negative interactions with romantic partners would be associated with alcohol consumption and an increased desire to drink. Using appropriate models, evaluate the evidence that negative relationship interactions are associated with higher alcohol consumption and an increased desire to drink. 
-```{r}
-model.neg.relationship <- glm(formula = numall ~ nrel, 
-                              family = poisson(link="log"),
-                              data = saturday)
-summary(model.neg.relationship)
-```
-```{r}
-# LRT on negative relationship along with confident interval
-Anova(model.neg.relationship)
-```
-> 'Fill this in: What do you learn?' 
 -   We will limit the study to observations from only Saturday, as the researchers stated that they are interested in the relationship between alcohol consumption and negative relationship interactions, and we need to remove the confounding effect of day of the week.
+
+\newpage
 
 ```{r drinking EDA 1}
 sat_drinks <- drinks %>%
@@ -488,6 +491,12 @@ sat_drinks <- drinks %>%
 
 pairs(sat_drinks)
 ```
+
+-   We spot "numall" (number of drinks) appear to have a positive correlation with "desired", which is expected as the more one desire, the more one might end up drinking.
+
+-   There doesn't seem to have any evidence of perfect co-linearity based on the plots.
+
+\newpage
 
 ```{r Univariate Analysis}
 h1 <- sat_drinks %>%
@@ -522,8 +531,10 @@ sat_drinks %>%
 
 -   The number of drinks is right-skewed with a lower bound of 0, which is expected.
 -   The desire to drink seems balanced within our sample.
--   Negative Relationship is heavily right -kewed, with 79% of the observations with 0 negative relationship. This might be a problem given the limited sample size. We might not be able to properly test this hypothesis.
+-   Negative Relationship is heavily right-skewed, with 70, or 79% of the observations with 0 negative relationship. This might be a problem given the limited sample size. We might not be able to properly test this hypothesis.
 -   Trait self-esteem is left-skewed with a cap of 4.0 and min of 2.0.
+
+\newpage
 
 ```{r Bivariante Analysis}
 p2_1 <- sat_drinks %>%
@@ -531,7 +542,6 @@ p2_1 <- sat_drinks %>%
   geom_point() +
   geom_smooth(method = lm, se = FALSE) +
   ggtitle("Number Of Drinks by Negative Relationship") +
-  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
   ylab("Number Of Drinks") +
   xlab("Negative Relationship")
 
@@ -540,7 +550,6 @@ p2_2 <- sat_drinks %>%
   geom_point() +
   geom_smooth(method = lm, se = FALSE) +
   ggtitle("Desire to Drink by Negative Relationship") +
-  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
   ylab("Desire to Drink") +
   xlab("Negative Relationship")
 
@@ -549,28 +558,43 @@ p2_1 / p2_2
 
 Given the limited number of observations that have more than 1 negative relationship reading, it's very hard to see a trend via the bi-variant visualization.
 
-```{r}
+\newpage
 
+```{r}
 sat_drinks <- sat_drinks %>%
-  mutate(high_self_esteem = rosn > median(rosn)) 
+  mutate(high_self_esteem = rosn > median(rosn))
 
 p3_1 <- sat_drinks %>%
   ggplot(aes(x = nrel, y = numall, color = high_self_esteem)) +
   geom_point() +
-  coord_quickmap()
-# ggtitle("Negative Relationship and Self-Esteem vs Alcohol")
+  coord_quickmap() +
+  ylab("Number Of Drinks") +
+  xlab("Negative Relationship") +
+  scale_color_discrete(name = "Self Esteem", labels = c("Low", "High"))
 
 
 p3_2 <- sat_drinks %>%
   mutate(high_positive_relationship = prel > median(prel)) %>%
   ggplot(aes(x = nrel, y = numall, color = high_positive_relationship)) +
   geom_point() +
-  coord_quickmap()
-# ggtitle("Negative and Positive Relationship vs Alcohol")
+  coord_quickmap()+ 
+  ylab("Number Of Drinks") +
+  xlab("Negative Relationship") +
+  scale_color_discrete(name = "Positive Relationship", labels = c("Low", "High"))
 
 p3_1 | p3_2
-# TODO: add lables
 ```
+
+-   \
+    From the first plot, we can see that at a given negative relationship event, we tend to observe more number of drinks for low self-esteem observations (in red) than high self-esteem observations.\
+
+    This is consistent with the assumption that the researcher has.\
+
+-   From the first plot, we can see that at a given negative relationship event, we tend to observe more number of drinks for observations with less positive relationship event (in red) than high positive relationship observations.\
+
+    This make us wonder if including the negative relationship itself is enough to predict the alcohol consumption, given the negative relationship effects could well be offset by positive relationship effects.
+
+\newpage
 
 ## Hypothesis One
 
@@ -578,47 +602,76 @@ p3_1 | p3_2
 Using appropriate models, evaluate the evidence that negative relationship interactions are associated with higher alcohol consumption and an increased desire to drink.
 
 ```{r}
+mod_nrel <-
+  sat_drinks %>% glm(
+    formula = numall ~ nrel,
+    family = poisson(link = log)
+  )
 
-mod_num_all <-
-  sat_drinks %>% glm(formula = numall ~ nrel,
-                     family = poisson(link = log))
-
-summary(mod_num_all)
+summary(mod_nrel)
 ```
 
-```{r}
+-   First, we use the Poisson model to predict the number of drinks using only the negative relationship event as the explanatory variable.
 
+-   Based on the output, we failed to reject the null hypothesis that negative relationship has no impact on the number of drinks consumed.
+
+-   We believe this is mostly because the lack of data: only 19 observations among a total of 89 have non-zero negative relationship event.
+
+\newpage
+
+```{r}
+mod_nrel_and_prel <-
+  sat_drinks %>% glm(
+    formula = numall ~ nrel + prel,
+    family = poisson(link = log)
+  )
+
+summary(mod_nrel_and_prel)
+```
+
+-   Then, we included positive relationship as a second explanatory variable, in an attempt to adjust for the offset emotional effect from positive relationship events on the number of alcohol assumptions.
+
+-   Using the Poisson model, we still fail to reject the null hypothesis that negative or positive relationship has no impact on the number of drinks consumed.
+
+-   Interestingly, the coefficient on positive relationship interactions is positive, meaning there is actually an predicted increase in alcohol consumption with the increase in positive relationship interactions, so our theory has completely fail in this case.
+
+    \newpage
+
+```{r}
 mod_desired <-
   sat_drinks %>% glm(formula = desired ~ nrel, data = .)
 
 summary(mod_desired)
 ```
 
-> 'Fill this in: What do you learn?'
+-   Lastly, we use a linear regression model to predict the desire to drink, using the negative relationship event as the sole explanatory variable.
+-   Again, we fail to reject the null hypothesis that negative relationship events have no impact on the desire to drink.
+
+Overall, we believe there is no strong evidence that negative relationship events would impact the number of drinks one would consume, given the data set we have chosen.
+
+\newpage
 
 ## Hypothesis Two
 
-```{r}
-model.neg.relationship.rosn <- glm(formula = numall ~ nrel + rosn + nrel:rosn,  
-                              family = poisson(link="log"),
-                              data = saturday)
-summary(model.neg.relationship.rosn)
-```
+> (1 point) The researchers hypothesize that the relation between drinking and negative relationship interactions should not be evident for individuals with high trait self-esteem.
+> Conduct an analysis to address this hypothesis.
 
 ```{r}
-# LRT on negative relationship along with confident interval
-Anova(model.neg.relationship.rosn)
-```
-> 'Fill this in: What do you learn?' 
-(1 point) The researchers hypothesize that the relation between drinking and negative relationship interactions should not be evident for individuals with high trait self-esteem.
-Conduct an analysis to address this hypothesis.
-
-```{r}
-
 model.neg.relationship.rosn <- sat_drinks %>%
-  glm(formula = numall ~ nrel + rosn + nrel:rosn,
-      family = poisson(link = "log"))
+  glm(
+    formula = numall ~ nrel + rosn + nrel:rosn,
+    family = poisson(link = "log")
+  )
 summary(model.neg.relationship.rosn)
+
 ```
 
-> 'Fill this in: What do you learn?'
+-   Using the Poisson regression model, we reject the null hypothesis that the negative relationship has no impact on drinking.
+    \
+    Given the coefficient of 1.07, we believe more negative relationship will cause more drinking.
+
+-   We also reject the null hypothesis that there is no interactions between negative relationship and trait self-esteem.\
+
+    Given the coefficient of -0.29, we believe that for people with high self-esteem, their drinking behavior less likely to be affected by an increase in negative relationship events, compared with people with low self-esteem.
+
+-   Our model supported the hypothesis of the researcher.

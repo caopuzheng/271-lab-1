@@ -31,6 +31,7 @@ Does a various physical conditions, in term of temperature and pressure, effect 
     -   Since the report has a page-limit, you will have to be selective when choosing visuals to illustrate your key points, associated with a concise explanation of the visuals.
 
 -   This EDA should begin with an inspection of the given dataset; examination of anomalies, missing values, potential of top and/or bottom code etc.
+
 ```{r load packages for homework 2, message=FALSE}
 #install.packages("MASS")
 #install.packages("ggplot2")
@@ -118,7 +119,10 @@ grid.arrange(p1, p2)
 grid.arrange(p3, p4)
 ```
 
-For our study, we noted two features, temperature and pressure, that most likely affect the odds of O-rings failure on a space shuttle. From the distribution and box plot, the number of O-rings failed has a higher distribution at the lower temperature. In term of pressure, the distribution plots showed that 0 failed O-rings at both high and low pressure while 2 failed O-rings showed a uniform distribution. However, it is noted that this plot does somewhat show that the number of O-rings failed is higher for higher pressure and lower for lower pressure.  
+For our study, we noted two features, temperature and pressure, that most likely affect the odds of O-rings failure on a space shuttle.
+From the distribution and box plot, the number of O-rings failed has a higher distribution at the lower temperature.
+In term of pressure, the distribution plots showed that 0 failed O-rings at both high and low pressure while 2 failed O-rings showed a uniform distribution.
+However, it is noted that this plot does somewhat show that the number of O-rings failed is higher for higher pressure and lower for lower pressure.
 
 # Analysis
 
@@ -141,12 +145,15 @@ mod1 <- glm(formula = cbind(O.ring, Number-O.ring) ~ Temp + Pressure,
 summary(mod1)
 
 Anova(mod1)
+<<<<<<< Updated upstream
 
 mod1 <- glm(formula=failure_rate~Temp+Pressure,
             data=challenger,
             family=binomial(link="logit"))
 
 summary(mod1)
+=======
+>>>>>>> Stashed changes
 
 ```
 
@@ -158,7 +165,8 @@ Anova(mod1, test='LR')
 
 ## Confidence Intervals (20 points)
 
-No matter what you determined about using or dropping `pressure`, for this section begin by considering the simplified model $logit(\pi) = \beta_0 + \beta_1 Temp$, where $\pi$ is the probability of an O-ring failure. Complete the following:
+No matter what you determined about using or dropping `pressure`, for this section begin by considering the simplified model $logit(\pi) = \beta_0 + \beta_1 Temp$, where $\pi$ is the probability of an O-ring failure.
+Complete the following:
 
 1.  Estimate the logistic regression model.
 2.  Determine if a quadratic term is needed in the model for the temperature in this model.
@@ -207,6 +215,7 @@ mod3 <- glm(formula=failure_rate~Temp+I(Temp^2),
             family=binomial(link="logit"))
 summary(mod3)
 ```
+
 ```{r}
 ##############################################################################
 # 2. Determine if quadratic term is needed
@@ -279,10 +288,13 @@ curve(expr = 6*exp(mod.beta[1] + mod.beta[2]*x)/(1+exp(mod.beta[1] + mod.beta[2]
 par(new=TRUE)
 
 ```
-> Intervals are wide for temperatures less than 65F is wide and short for temperatures greater than 65F. This is expected, because most of the data have temperatures greater than 65F. The estimated interval for temperature equal to 30F is about (1,6); this illustrates that we have high variability for the expected number of incidents.
 
+> Intervals are wide for temperatures less than 65F is wide and short for temperatures greater than 65F.
+> This is expected, because most of the data have temperatures greater than 65F.
+> The estimated interval for temperature equal to 30F is about (1,6); this illustrates that we have high variability for the expected number of incidents.
 
 3.  The temperature was 31° at launch for the Challenger in 1986. Estimate the probability of an O-ring failure using this temperature, and compute a corresponding confidence interval. Discuss what assumptions need to be made in order to apply the inference procedures.
+
 ```{r}
 new.data <- data.frame('Temp' = 31)
 pred.prob <- predict(mod2, newdata = new.data, type='link', se = TRUE)
@@ -311,10 +323,16 @@ result.profile_lr
 
 ```
 
+> > > > > > > a6d9c701f164e79f25aee0f6243a6896ad608776 \## Bootstrap Confidence Intervals (30 points)
 
+<<<<<<< Updated upstream
 ## Bootstrap Confidence Intervals (30 points)
 
 Rather than relying on asymptotic properties, consider using a parametric bootstrap, as did Dalal, Fowlkes and Hoadley. To do this:
+=======
+Rather than relying on asymptotic properties, consider using a parametric bootstrap, as did Dalal, Fowlkes and Hoadley.
+To do this:
+>>>>>>> Stashed changes
 
 1.  Simulate a large number of data sets (n = 23 for each) by re-sampling with replacement from the data.
 2.  Estimate a model for each dataset.
@@ -396,6 +414,7 @@ hist_(sliced_df$pi.hat, main = "Gaussian Distribution",xlim = c(0, 1))
 qqnorm(sliced_df$pi.hat)
 qqline(sliced_df$pi.hat, col = "blue", lwd = 2)
 ```
+
 To produce a confidence interval, the authors used the 0.05 and 0.95 observed quantiles from the simulated distribution as their 90% confidence interval limits.
 
 Using the parametric bootstrap, compute 90% confidence intervals separately at each integer temperature between 10° and 100° Fahrenheit.
@@ -404,8 +423,12 @@ In this section, you should describe your process, justify such a process, and p
 
 ## Alternative Specification (10 points)
 
-With the same set of explanatory variables in your final model, estimate a linear regression model. Explain the model results; conduct model diagnostic; and assess the validity of the model assumptions. Would you use the linear regression model or binary logistic regression in this case? Explain why.
+With the same set of explanatory variables in your final model, estimate a linear regression model.
+Explain the model results; conduct model diagnostic; and assess the validity of the model assumptions.
+Would you use the linear regression model or binary logistic regression in this case?
+Explain why.
 
 # Conclusions (10 points)
 
-Interpret the main result of your preferred model in terms of both odds and probability of failure. Summarize this result with respect to the question(s) being asked and key takeaways from the analysis.
+Interpret the main result of your preferred model in terms of both odds and probability of failure.
+Summarize this result with respect to the question(s) being asked and key takeaways from the analysis.
