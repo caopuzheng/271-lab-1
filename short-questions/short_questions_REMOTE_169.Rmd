@@ -438,13 +438,6 @@ summary(drinks)
 
 ## EDA
 
-<<<<<<< HEAD
-```{r drinking EDA}
-# limit the study to Saturday like the researchers
-saturday <- drinks[drinks$dayweek == 6, c(1, 4, 5, 6, 10, 11)]
-head(saturday)
-pairs( saturday )
-=======
 (2 points) Conduct a thorough EDA of the data set, giving special attention to the relationships relevant to the researchers' hypotheses.
 Address the reasons for limiting the study to observations from only one day.
 
@@ -460,26 +453,10 @@ drinks %>%
   theme(plot.title = element_text(lineheight = 1, face = "bold")) +
   ylab("Number of Drinks") +
   xlab("Day of Week")
->>>>>>> a6d9c701f164e79f25aee0f6243a6896ad608776
 ```
 
 -   We can observe that the day of the week seem to have association with the number of drinks consumed, and Saturday tends to have the highest number of drinks in our sample.
 
-<<<<<<< HEAD
-## Hypothesis One 
-(2 points) The researchers hypothesize that negative interactions with romantic partners would be associated with alcohol consumption and an increased desire to drink. Using appropriate models, evaluate the evidence that negative relationship interactions are associated with higher alcohol consumption and an increased desire to drink. 
-```{r}
-model.neg.relationship <- glm(formula = numall ~ nrel, 
-                              family = poisson(link="log"),
-                              data = saturday)
-summary(model.neg.relationship)
-```
-```{r}
-# LRT on negative relationship along with confident interval
-Anova(model.neg.relationship)
-```
-> 'Fill this in: What do you learn?' 
-=======
 -   We will limit the study to observations from only Saturday, as the researchers stated that they are interested in the relationship between alcohol consumption and negative relationship interactions, and we need to remove the confounding effect of day of the week.
 
 ```{r drinking EDA 1}
@@ -597,23 +574,9 @@ summary(mod_desired)
 ```
 
 > 'Fill this in: What do you learn?'
->>>>>>> a6d9c701f164e79f25aee0f6243a6896ad608776
 
 ## Hypothesis Two
 
-<<<<<<< HEAD
-```{r}
-model.neg.relationship.rosn <- glm(formula = numall ~ nrel + rosn + nrel:rosn,  
-                              family = poisson(link="log"),
-                              data = saturday)
-summary(model.neg.relationship.rosn)
-```
-```{r}
-# LRT on negative relationship along with confident interval
-Anova(model.neg.relationship.rosn)
-```
-> 'Fill this in: What do you learn?' 
-=======
 (1 point) The researchers hypothesize that the relation between drinking and negative relationship interactions should not be evident for individuals with high trait self-esteem.
 Conduct an analysis to address this hypothesis.
 
@@ -626,4 +589,3 @@ summary(model.neg.relationship.rosn)
 ```
 
 > 'Fill this in: What do you learn?'
->>>>>>> a6d9c701f164e79f25aee0f6243a6896ad608776
