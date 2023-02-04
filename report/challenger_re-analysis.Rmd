@@ -135,26 +135,12 @@ However, it is noted that this plot does somewhat show that the number of O-ring
 ```{r}
 # Since there are 6 Orings on a shuttle
 # We define the failure rates as number of O Rings Failed out of 6 O Rings
-# let's define some small epsilon to address log of 0
-# do stuff
-challenger$failure_rate <- challenger$O.ring/challenger$Number
 
+# create a binomial logit model on O ring failure
 mod1 <- glm(formula = cbind(O.ring, Number-O.ring) ~ Temp + Pressure, 
             family = binomial(link="logit"),
             data = challenger)
 summary(mod1)
-
-Anova(mod1)
-<<<<<<< Updated upstream
-
-mod1 <- glm(formula=failure_rate~Temp+Pressure,
-            data=challenger,
-            family=binomial(link="logit"))
-
-summary(mod1)
-=======
->>>>>>> Stashed changes
-
 ```
 
 2.  Dalal, Fowlkes, and Hoadley (1989) chose to remove `pressure` from the model based on their likelihood ratio tests. Critically evaluate, using your test results and understanding of the question and data, whether `pressure` should be included in the model, or instead, `pressure` should not be included in the model. Your report needs to make a determination, argue why it is most appropriate choice, and make note of how (if at all) the model results are affected by the choice of including or excluding `pressure`.
@@ -191,28 +177,6 @@ summary(mod2)
 mod3 <- glm(formula=cbind(O.ring, Number-O.ring)~Temp+I(Temp^2),
             family = binomial(link="logit"),
             data=challenger)
-summary(mod3)
-
-# 2. determine if quadratic term is needed
-anova(mod2, mod3, test='Chisq')
-
-# 3. Graph pi vs Temp
-coef <- mod2$coefficients
-xx = c(1)
-z = coef[1]*xx[1]
-x <- challenger$Temp
-
-
-##############################################################################
-# Estimate the logistic regression model
-##############################################################################
-mod2 <- glm(formula=failure_rate~Temp,
-            data=challenger,
-            family=binomial(link="logit"))
-summary(mod2)
-mod3 <- glm(formula=failure_rate~Temp+I(Temp^2),
-            data=challenger,
-            family=binomial(link="logit"))
 summary(mod3)
 ```
 
@@ -296,18 +260,9 @@ par(new=TRUE)
 3.  The temperature was 31° at launch for the Challenger in 1986. Estimate the probability of an O-ring failure using this temperature, and compute a corresponding confidence interval. Discuss what assumptions need to be made in order to apply the inference procedures.
 
 ```{r}
-new.data <- data.frame('Temp' = 31)
-pred.prob <- predict(mod2, newdata = new.data, type='link', se = TRUE)
-pi <- exp(pred.prob$fit)/(1+exp(pred.prob$fit))
-
-linear.Wald.CI <- pred.prob$fit + qnorm(p=c(0.025, 0.975))*pred.prob$se
-Wald.CI <- exp(linear.Wald.CI)/(1+exp(linear.Wald.CI))
-
-ChallengerSpaceLaunch <- data.frame(pi.hat = pi, lower = Wald.CI[1], upper = Wald.CI[2] )
-ChallengerSpaceLaunch
-```
-
-```{r}
+##############################################################################
+# Compute the Probability at T=31 degree
+##############################################################################
 params = dim(summary(mod2)$coefficients)[1]
 predict.data = matrix(data=c(1,31),
                        nrow=1,
@@ -323,16 +278,10 @@ result.profile_lr
 
 ```
 
-> > > > > > > a6d9c701f164e79f25aee0f6243a6896ad608776 \## Bootstrap Confidence Intervals (30 points)
 
-<<<<<<< Updated upstream
 ## Bootstrap Confidence Intervals (30 points)
-
-Rather than relying on asymptotic properties, consider using a parametric bootstrap, as did Dalal, Fowlkes and Hoadley. To do this:
-=======
 Rather than relying on asymptotic properties, consider using a parametric bootstrap, as did Dalal, Fowlkes and Hoadley.
 To do this:
->>>>>>> Stashed changes
 
 1.  Simulate a large number of data sets (n = 23 for each) by re-sampling with replacement from the data.
 2.  Estimate a model for each dataset.
@@ -359,45 +308,45 @@ for (i in 1:100) {
   mod_resample <- glm(formula=cbind(O.ring, Number-O.ring)~Temp,
               family = binomial(link="logit"),
               data=challenger_resampled)
-  output <- NULL
-  conf.lower <- NULL
-  conf.upper <- NULL
-  tprime <- NULL
+  
+  
   # run the model though to obtain the output
   for (t in 10:100) {
     new.data <- data.frame('Temp' = t)
-    pred.prob <- predict(mod_resample, newdata = new.data, type='link', se = TRUE)
+
     
     # compute probability and CI
-    pi <- exp(pred.prob$fit)/(1+exp(pred.prob$fit))
-    linear.Wald.CI <- pred.prob$fit + qnorm(p=c(0.05, 0.95))*pred.prob$se
-    Wald.CI <- exp(linear.Wald.CI)/(1+exp(linear.Wald.CI))
-    # append data to array
-    tprime <- c(tprime, t)
-    output <- c(output, pi)
-    conf.lower <- c(conf.lower, Wald.CI[1])
-    conf.upper <- c(conf.upper, Wald.CI[2])
+    predict.data = matrix(data=c(1,t),
+                       nrow=1,
+                       ncol=params)
+    linear.combo = mcprofile(object = mod2, CM=predict.data)
+    linear.CI = confint(linear.combo, level=0.95)
+    logit.CI = exp(linear.CI$confint)/(1+exp(linear.CI$confint))
+    pi = exp(linear.CI$estimate)/(1+exp(linear.CI$estimate))
+    
+    # append each bootstrap run
+    temp <- c(temp, t)
+    pi.hat <- c(pi.hat, pi$Estimate)
+    CI.lower <- c(CI.lower, logit.CI$lower)
+    CI.upper <- c(CI.upper, logit.CI$upper)
   }
   
-  # append each bootstrap run
-  temp <- c(temp, tprime)
-  pi.hat <- c(pi.hat, output)
-  CI.lower <- c(CI.lower, conf.lower)
-  CI.upper <- c(CI.upper, conf.upper)
+
 }
 
 bootstrap_ouptuts <- data.frame(temp = temp, pi.hat = pi.hat, 
                                 lower = CI.lower, upper = CI.upper)
 
 agg_tbl <- bootstrap_ouptuts %>% group_by(temp) %>% 
-               summarise(pi.hat = mean(pi.hat), 
-                         lower = mean(lower), 
-                         upper = mean(upper)) 
+               summarise(pi.hat = mean(as.numeric(pi.hat)), 
+                         lower = mean(as.numeric(lower)), 
+                         upper = mean(as.numeric(upper)))
 ```
 
 ```{r plot some QQ plots}
 # sliced the data on 1 temperature unit
-t <- 35
+# we chose 31 here since that was what the Challenger launch at
+t <- 31
 sliced_df <- bootstrap_ouptuts[bootstrap_ouptuts$temp == t, ]
 
 # Draw two plots next to each other
@@ -410,9 +359,9 @@ hist_ <- function(x, ...){
   #lines(zs, normal_density, type = "l", col = "red", lwd = 2)
 }
 
-hist_(sliced_df$pi.hat, main = "Gaussian Distribution",xlim = c(0, 1))
-qqnorm(sliced_df$pi.hat)
-qqline(sliced_df$pi.hat, col = "blue", lwd = 2)
+hist_(as.numeric(sliced_df$pi.hat), main = "Gaussian Distribution",xlim = c(0, 1))
+qqnorm(as.numeric(sliced_df$pi.hat))
+qqline(as.numeric(sliced_df$pi.hat), col = "blue", lwd = 2)
 ```
 
 To produce a confidence interval, the authors used the 0.05 and 0.95 observed quantiles from the simulated distribution as their 90% confidence interval limits.
