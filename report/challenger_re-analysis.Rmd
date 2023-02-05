@@ -19,7 +19,7 @@ In this study, we are investigating the effect of physical condition such as tem
 
 ## Research question
 
-Does a various physical conditions, in term of temperature and pressure, effect the odds of O-Rings failures on a shuttle?
+Do physical conditions, in term of temperature and pressure, affect the odds of O-Rings failures on a shuttle?
 
 # Data (20 points)
 
@@ -32,7 +32,7 @@ Does a various physical conditions, in term of temperature and pressure, effect 
 
 -   This EDA should begin with an inspection of the given dataset; examination of anomalies, missing values, potential of top and/or bottom code etc.
 
-```{r load packages for homework 2, message=FALSE}
+```{r load packages for homework 2, echo=FALSE, message=FALSE}
 #install.packages("MASS")
 #install.packages("ggplot2")
 #install.packages("sandwich")
@@ -60,18 +60,17 @@ library(Hmisc)
 library(gridExtra)
 ```
 
-```{r read challenger data, message=FALSE}
+```{r read challenger data, echo=FALSE, message=FALSE}
 challenger <- read_csv("../data/raw/challenger.csv")
 ```
 
-```{r tabular EDA, message = FALSE}
-head(challenger)
+```{r tabular EDA, echo=FALSE, message=FALSE}
 glimpse(challenger)
 summary(challenger)
 describe(challenger)
 ```
 
-```{r Analysis of Response Variable}
+```{r Analysis of Response Variable, echo=FALSE, message=FALSE}
 tab <- xtabs(~ O.ring, data = challenger)
 names(tab)
 
@@ -87,6 +86,11 @@ plot(x, tab, type='bar', main="Number of O-Ring Failed by Flights",
 
 -   Describe the data that you are using. How is this data generated, what is the sampling process that brought it to your availability. If it is helpful, you might describe the population (i.e. the Random Variables) that exist and how samples are produced from these random variables.
 -   The authors use logistic regression to estimate the probability an O-ring will fail. In order to use this model, the authors needed to assume that each O-ring is independent for each launch. Discuss why this assumption is necessary and the potential problems with it. Note that a subsequent analysis helped to alleviate the authors' concerns about independence.
+
+----
+The data set used in this analysis contains 5 columns, Flight, Temp, Pressure, O.ring, Number. Flight is a unique identifier reperesenting each flight observed and recored and Number represents the total number of O-ring in each spacecraft, here each spacecraft contains 6 O-rings. The O.ring variable is a random variable that denotes the number of O-ring failed at each individual launch. Lastly, Temp and Pressure are both numerica values and are the physical condition measurements taken at each launch. 
+
+There are 24 launches in total and there are no missing values in any of the features in the data set. Temperature is shown to have 16 distinct values with a range between 53 to 81 with a median of 70. 
 
 ## Key Features
 
@@ -119,10 +123,8 @@ grid.arrange(p1, p2)
 grid.arrange(p3, p4)
 ```
 
-For our study, we noted two features, temperature and pressure, that most likely affect the odds of O-rings failure on a space shuttle.
-From the distribution and box plot, the number of O-rings failed has a higher distribution at the lower temperature.
-In term of pressure, the distribution plots showed that 0 failed O-rings at both high and low pressure while 2 failed O-rings showed a uniform distribution.
-However, it is noted that this plot does somewhat show that the number of O-rings failed is higher for higher pressure and lower for lower pressure.
+For our study, we noted two features, temperature and pressure, that most likely affect the odds of O-rings failure on a space shuttle.From the distribution and box plot, the number of O-rings failed has a higher distribution at the lower temperature.
+In term of pressure, the distribution plots showed that 0 failed O-rings at both high and low pressure while 2 failed O-rings showed a uniform distribution. However, it is noted that this plot does somewhat show that the number of O-rings failed is higher for higher pressure and lower for lower pressure. In the follow study, we will be using both temperature and pressure as explanatory variable to model the odd of each individual O-ring fail during the launch. Our goal is to shed some light into the inalienability of each of this feature and their statistical significant.
 
 # Analysis
 
