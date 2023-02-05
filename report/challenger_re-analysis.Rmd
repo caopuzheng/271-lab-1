@@ -90,7 +90,7 @@ plot(x, tab, type='bar', main="Number of O-Ring Failed by Flights",
 ----
 The data set used in this analysis contains 5 columns, Flight, Temp, Pressure, O.ring, Number. Flight is a unique identifier reperesenting each flight observed and recored and Number represents the total number of O-ring in each spacecraft, here each spacecraft contains 6 O-rings. The O.ring variable is a random variable that denotes the number of O-ring failed at each individual launch. Lastly, Temp and Pressure are both numerica values and are the physical condition measurements taken at each launch. 
 
-There are 24 launches in total and there are no missing values in any of the features in the data set. Temperature is shown to have 16 distinct values with a range between 53 to 81 with a median of 70. 
+There are 24 launches in total and there are no missing values in any of the features in the data set. Temperature is shown to have 16 distinct values with a range between 53 to 81 with a median of 70. Thus
 
 ## Key Features
 
