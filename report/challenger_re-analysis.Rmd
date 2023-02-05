@@ -356,6 +356,7 @@ agg_tbl <- bootstrap_ouptuts %>% group_by(temp) %>%
                          upper = mean(as.numeric(upper)))
 ```
 
+
 ```{r plot some QQ plots}
 # sliced the data on 1 temperature unit
 # we chose 31 here since that was what the Challenger launch at
@@ -376,6 +377,7 @@ hist_(as.numeric(sliced_df$pi.hat), main = "Gaussian Distribution",xlim = c(0, 1
 qqnorm(as.numeric(sliced_df$pi.hat))
 qqline(as.numeric(sliced_df$pi.hat), col = "blue", lwd = 2)
 ```
+
 
 To produce a confidence interval, the authors used the 0.05 and 0.95 observed quantiles from the simulated distribution as their 90% confidence interval limits.
 
