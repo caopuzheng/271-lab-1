@@ -33,14 +33,14 @@ Does a various physical conditions, in term of temperature and pressure, effect 
 -   This EDA should begin with an inspection of the given dataset; examination of anomalies, missing values, potential of top and/or bottom code etc.
 
 ```{r load packages for homework 2, message=FALSE}
-#install.packages("MASS")
-#install.packages("ggplot2")
-#install.packages("sandwich")
-#install.packages("stargazer")
-#install.packages("mcprofile")
-#install.packages("Hmisc")
-#install.packages("patchwork")
-#install.packages("car")
+# install.packages("MASS")
+# install.packages("ggplot2")
+# install.packages("sandwich")
+# install.packages("stargazer")
+# install.packages("mcprofile")
+# install.packages("Hmisc")
+# install.packages("patchwork")
+# install.packages("car")
 library(tidyverse)
 library(patchwork)
 library(gridExtra)
@@ -58,6 +58,10 @@ library(stargazer)
 library(mcprofile)
 library(Hmisc)
 library(gridExtra)
+
+theme_set(theme_minimal())
+knitr::opts_chunk$set(tidy.opts = list(width_cutoff = 100), tidy = TRUE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
 ```{r read challenger data, message=FALSE}
@@ -72,13 +76,15 @@ describe(challenger)
 ```
 
 ```{r Analysis of Response Variable}
-tab <- xtabs(~ O.ring, data = challenger)
+tab <- xtabs(~O.ring, data = challenger)
 names(tab)
 
 x <- as.numeric(names(tab))
 
-plot(x, tab, type='bar', main="Number of O-Ring Failed by Flights",
-     xlab="Number of O-rings failed", ylab="Frequency")
+plot(x, tab,
+  type = "bar", main = "Number of O-Ring Failed by Flights",
+  xlab = "Number of O-rings failed", ylab = "Frequency"
+)
 ```
 
 ## Description
@@ -92,36 +98,55 @@ plot(x, tab, type='bar', main="Number of O-Ring Failed by Flights",
 
 ```{r}
 p1 <- challenger %>%
-    ggplot(aes(x = Temp)) + geom_density(aes(y = ..density..,
-    color = factor(O.ring), fill = factor(O.ring)), alpha = 0.2) + ggtitle("Distribution of Temp") +
-    theme(plot.title = element_text(lineheight = 1, face = "bold")) +
-    xlab("Temp") + ylab("Density")
+  ggplot(aes(x = Temp)) +
+  geom_density(aes(
+    y = ..density..,
+    color = factor(O.ring), fill = factor(O.ring)
+  ), alpha = 0.2) +
+  ggtitle("Distribution of Temp") +
+  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
+  xlab("Temp") +
+  ylab("Density")
 
 p2 <- challenger %>%
-    ggplot(aes(x = Pressure)) + geom_density(aes(y = ..density..,
-    color = factor(O.ring), fill = factor(O.ring)), alpha = 0.2) + ggtitle("Distribution of Pressure") +
-    theme(plot.title = element_text(lineheight = 1, face = "bold")) +
-    xlab("Pressure") + ylab("Density")
+  ggplot(aes(x = Pressure)) +
+  geom_density(aes(
+    y = ..density..,
+    color = factor(O.ring), fill = factor(O.ring)
+  ), alpha = 0.2) +
+  ggtitle("Distribution of Pressure") +
+  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
+  xlab("Pressure") +
+  ylab("Density")
 
 p3 <- challenger %>%
-    ggplot(aes(factor(O.ring), Temp)) + geom_boxplot(aes(fill = factor(O.ring))) +
-    coord_flip() + ggtitle("Temp by Number of Oring Incidents") +
-    theme(plot.title = element_text(lineheight = 1, face = "bold")) +
-    ylab("Temp") + xlab("O.ring")
+  ggplot(aes(factor(O.ring), Temp)) +
+  geom_boxplot(aes(fill = factor(O.ring))) +
+  coord_flip() +
+  ggtitle("Temp by Number of Oring Incidents") +
+  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
+  ylab("Temp") +
+  xlab("O.ring")
 
 p4 <- challenger %>%
-    ggplot(aes(factor(O.ring), Pressure)) + geom_boxplot(aes(fill = factor(O.ring))) +
-    coord_flip() + ggtitle("Pressure by Number of Oring Incidents") +
-    theme(plot.title = element_text(lineheight = 1, face = "bold")) +
-    ylab("Pressure") + xlab("O.ring")
+  ggplot(aes(factor(O.ring), Pressure)) +
+  geom_boxplot(aes(fill = factor(O.ring))) +
+  coord_flip() +
+  ggtitle("Pressure by Number of Oring Incidents") +
+  theme(plot.title = element_text(lineheight = 1, face = "bold")) +
+  ylab("Pressure") +
+  xlab("O.ring")
 
 grid.arrange(p1, p2)
 grid.arrange(p3, p4)
 ```
 
 For our study, we noted two features, temperature and pressure, that most likely affect the odds of O-rings failure on a space shuttle.
+
 From the distribution and box plot, the number of O-rings failed has a higher distribution at the lower temperature.
+
 In term of pressure, the distribution plots showed that 0 failed O-rings at both high and low pressure while 2 failed O-rings showed a uniform distribution.
+
 However, it is noted that this plot does somewhat show that the number of O-rings failed is higher for higher pressure and lower for lower pressure.
 
 # Analysis
@@ -137,16 +162,18 @@ However, it is noted that this plot does somewhat show that the number of O-ring
 # We define the failure rates as number of O Rings Failed out of 6 O Rings
 
 # create a binomial logit model on O ring failure
-mod1 <- glm(formula = cbind(O.ring, Number-O.ring) ~ Temp + Pressure, 
-            family = binomial(link="logit"),
-            data = challenger)
+mod1 <- glm(
+  formula = cbind(O.ring, Number - O.ring) ~ Temp + Pressure,
+  family = binomial(link = "logit"),
+  data = challenger
+)
 summary(mod1)
 ```
 
 2.  Dalal, Fowlkes, and Hoadley (1989) chose to remove `pressure` from the model based on their likelihood ratio tests. Critically evaluate, using your test results and understanding of the question and data, whether `pressure` should be included in the model, or instead, `pressure` should not be included in the model. Your report needs to make a determination, argue why it is most appropriate choice, and make note of how (if at all) the model results are affected by the choice of including or excluding `pressure`.
 
 ```{r}
-Anova(mod1, test='LR')
+Anova(mod1, test = "LR")
 ```
 
 ## Confidence Intervals (20 points)
@@ -169,14 +196,18 @@ Specific requirements for these plots:
 ##############################################################################
 # Estimate the logistic regression model
 ##############################################################################
-mod2 <- glm(formula=cbind(O.ring, Number-O.ring)~Temp,
-            family = binomial(link="logit"),
-            data=challenger)
+mod2 <- glm(
+  formula = cbind(O.ring, Number - O.ring) ~ Temp,
+  family = binomial(link = "logit"),
+  data = challenger
+)
 summary(mod2)
 
-mod3 <- glm(formula=cbind(O.ring, Number-O.ring)~Temp+I(Temp^2),
-            family = binomial(link="logit"),
-            data=challenger)
+mod3 <- glm(
+  formula = cbind(O.ring, Number - O.ring) ~ Temp + I(Temp^2),
+  family = binomial(link = "logit"),
+  data = challenger
+)
 summary(mod3)
 ```
 
@@ -184,7 +215,7 @@ summary(mod3)
 ##############################################################################
 # 2. Determine if quadratic term is needed
 ##############################################################################
-anova(mod2,mod3,test='Chisq')
+anova(mod2, mod3, test = "Chisq")
 ```
 
 ```{r}
@@ -193,64 +224,73 @@ anova(mod2,mod3,test='Chisq')
 ##############################################################################
 mod.beta <- mod2$coefficients
 # Reproduce the graph overlaying the same result from the linear model as a comparison
-curve(expr = exp(mod.beta[1] + mod.beta[2]*x)/(1+exp(mod.beta[1] + mod.beta[2]*x)),
-    xlim = c(31, max(challenger$Temp)),
-    ylim = c(0,1),
-    col = "blue", 
-    main = expression(pi == frac(e^(z + coef[inc]*Temp), 
-                                 1+e^(z+coef[inc]*Temp))),
-      xlab =  expression(Temp), ylab = expression(pi))
-par(new=TRUE)
+curve(
+  expr = exp(mod.beta[1] + mod.beta[2] * x) / (1 + exp(mod.beta[1] + mod.beta[2] * x)),
+  xlim = c(31, max(challenger$Temp)),
+  ylim = c(0, 1),
+  col = "blue",
+  main = expression(pi == frac(
+    e^(z + coef[inc] * Temp),
+    1 + e^(z + coef[inc] * Temp)
+  )),
+  xlab = expression(Temp), ylab = expression(pi)
+)
+par(new = TRUE)
 
 
 # calculate true wald confidence interval at temperature
-wald.CI.true.coverage = function(mod, temp) {
-  alpha = 0.5
+wald.CI.true.coverage <- function(mod, temp) {
+  alpha <- 0.5
   predict.data <- data.frame(Temp = temp)
-  linear.pred = predict(object = mod, newdata = predict.data, type = "link", se = TRUE)
-  pi.hat = exp(linear.pred$fit)/(1+exp(linear.pred$fit))
-  CI.lin.pred = linear.pred$fit + qnorm(p = c(alpha/2, 1-alpha/2))*linear.pred$se.fit
-  CI.pi = exp(CI.lin.pred)/(1+exp(CI.lin.pred))
-  wald.df = round(data.frame(temp, lower=CI.pi[1], upper=CI.pi[2]),4)
+  linear.pred <- predict(object = mod, newdata = predict.data, type = "link", se = TRUE)
+  pi.hat <- exp(linear.pred$fit) / (1 + exp(linear.pred$fit))
+  CI.lin.pred <- linear.pred$fit + qnorm(p = c(alpha / 2, 1 - alpha / 2)) * linear.pred$se.fit
+  CI.pi <- exp(CI.lin.pred) / (1 + exp(CI.lin.pred))
+  wald.df <- round(data.frame(temp, lower = CI.pi[1], upper = CI.pi[2]), 4)
   return(wald.df)
 }
 
-temp.seq = seq(31, 81, by=1)
-wald.CI.true.matrix = matrix(data=NA,nrow=length(temp.seq),ncol=3)
-counter=1
+temp.seq <- seq(31, 81, by = 1)
+wald.CI.true.matrix <- matrix(data = NA, nrow = length(temp.seq), ncol = 3)
+counter <- 1
 for (temp in temp.seq) {
-  wald.df2 = wald.CI.true.coverage(mod2, temp) 
-  wald.CI.true.matrix[counter,] = c(temp, wald.df2$lower, wald.df2$upper)
-  counter = counter+1
+  wald.df2 <- wald.CI.true.coverage(mod2, temp)
+  wald.CI.true.matrix[counter, ] <- c(temp, wald.df2$lower, wald.df2$upper)
+  counter <- counter + 1
 }
-wald.CI.true.matrix[1:5,]
+wald.CI.true.matrix[1:5, ]
 
 # plot lower bound
-lines(x=temp.seq,
-     y=wald.CI.true.matrix[,2],
-     ylim=c(0,1),
-     type="l",
-     lty="dotted",
-     col="red")
+lines(
+  x = temp.seq,
+  y = wald.CI.true.matrix[, 2],
+  ylim = c(0, 1),
+  type = "l",
+  lty = "dotted",
+  col = "red"
+)
 
 # plot upper bound
-lines(x=temp.seq,
-     y=wald.CI.true.matrix[,3],
-     ylim=c(0,1),
-     type="l",
-     lty="dotted",
-     col="red")
+lines(
+  x = temp.seq,
+  y = wald.CI.true.matrix[, 3],
+  ylim = c(0, 1),
+  type = "l",
+  lty = "dotted",
+  col = "red"
+)
 
 ##############################################################################
 # 4. Graph Expected number of failures vs Temp
 ##############################################################################
-curve(expr = 6*exp(mod.beta[1] + mod.beta[2]*x)/(1+exp(mod.beta[1] + mod.beta[2]*x)),
-    xlim = c(31, max(challenger$Temp)),
-    ylim = c(0,6),
-    col = "blue", 
-    xlab =  expression(Temp), ylab = "Expected Number of Failures")
-par(new=TRUE)
-
+curve(
+  expr = 6 * exp(mod.beta[1] + mod.beta[2] * x) / (1 + exp(mod.beta[1] + mod.beta[2] * x)),
+  xlim = c(31, max(challenger$Temp)),
+  ylim = c(0, 6),
+  col = "blue",
+  xlab = expression(Temp), ylab = "Expected Number of Failures"
+)
+par(new = TRUE)
 ```
 
 > Intervals are wide for temperatures less than 65F is wide and short for temperatures greater than 65F.
@@ -263,19 +303,22 @@ par(new=TRUE)
 ##############################################################################
 # Compute the Probability at T=31 degree
 ##############################################################################
-params = dim(summary(mod2)$coefficients)[1]
-predict.data = matrix(data=c(1,31),
-                       nrow=1,
-                       ncol=params)
-linear.combo = mcprofile(object = mod2, CM=predict.data)
-mroz_logit_profile = confint(linear.combo, level=0.95)
-mroz_logit_ci = exp(mroz_logit_profile$confint)/(1+exp(mroz_logit_profile$confint))
-mroz_logit_estimate = exp(mroz_logit_profile$estimate)/(1+exp(mroz_logit_profile$estimate))
-result.profile_lr = data.frame(estimate=mroz_logit_estimate,
-                               lower=mroz_logit_ci$lower,
-                               upper=mroz_logit_ci$upper)
+params <- dim(summary(mod2)$coefficients)[1]
+predict.data <- matrix(
+  data = c(1, 31),
+  nrow = 1,
+  ncol = params
+)
+linear.combo <- mcprofile(object = mod2, CM = predict.data)
+mroz_logit_profile <- confint(linear.combo, level = 0.95)
+mroz_logit_ci <- exp(mroz_logit_profile$confint) / (1 + exp(mroz_logit_profile$confint))
+mroz_logit_estimate <- exp(mroz_logit_profile$estimate) / (1 + exp(mroz_logit_profile$estimate))
+result.profile_lr <- data.frame(
+  estimate = mroz_logit_estimate,
+  lower = mroz_logit_ci$lower,
+  upper = mroz_logit_ci$upper
+)
 result.profile_lr
-
 ```
 
 
@@ -300,47 +343,54 @@ CI.upper <- NULL
 
 for (i in 1:100) {
   challenger_resampled <- NULL
-  
+
   # creating a resampled data from the original dataset with replacement
-  challenger_resampled <- challenger[sample(nrow(challenger), size=23, replace = TRUE), ]
-  
+  challenger_resampled <- challenger[sample(nrow(challenger), size = 23, replace = TRUE), ]
+
   # construct a model from the new resampled dataset
-  mod_resample <- glm(formula=cbind(O.ring, Number-O.ring)~Temp,
-              family = binomial(link="logit"),
-              data=challenger_resampled)
-  
-  
+  mod_resample <- glm(
+    formula = cbind(O.ring, Number - O.ring) ~ Temp,
+    family = binomial(link = "logit"),
+    data = challenger_resampled
+  )
+
+
   # run the model though to obtain the output
   for (t in 10:100) {
-    new.data <- data.frame('Temp' = t)
+    new.data <- data.frame("Temp" = t)
 
-    
+
     # compute probability and CI
-    predict.data = matrix(data=c(1,t),
-                       nrow=1,
-                       ncol=params)
-    linear.combo = mcprofile(object = mod2, CM=predict.data)
-    linear.CI = confint(linear.combo, level=0.95)
-    logit.CI = exp(linear.CI$confint)/(1+exp(linear.CI$confint))
-    pi = exp(linear.CI$estimate)/(1+exp(linear.CI$estimate))
-    
+    predict.data <- matrix(
+      data = c(1, t),
+      nrow = 1,
+      ncol = params
+    )
+    linear.combo <- mcprofile(object = mod2, CM = predict.data)
+    linear.CI <- confint(linear.combo, level = 0.95)
+    logit.CI <- exp(linear.CI$confint) / (1 + exp(linear.CI$confint))
+    pi <- exp(linear.CI$estimate) / (1 + exp(linear.CI$estimate))
+
     # append each bootstrap run
     temp <- c(temp, t)
     pi.hat <- c(pi.hat, pi$Estimate)
     CI.lower <- c(CI.lower, logit.CI$lower)
     CI.upper <- c(CI.upper, logit.CI$upper)
   }
-  
-
 }
 
-bootstrap_ouptuts <- data.frame(temp = temp, pi.hat = pi.hat, 
-                                lower = CI.lower, upper = CI.upper)
+bootstrap_ouptuts <- data.frame(
+  temp = temp, pi.hat = pi.hat,
+  lower = CI.lower, upper = CI.upper
+)
 
-agg_tbl <- bootstrap_ouptuts %>% group_by(temp) %>% 
-               summarise(pi.hat = mean(as.numeric(pi.hat)), 
-                         lower = mean(as.numeric(lower)), 
-                         upper = mean(as.numeric(upper)))
+agg_tbl <- bootstrap_ouptuts %>%
+  group_by(temp) %>%
+  summarise(
+    pi.hat = mean(as.numeric(pi.hat)),
+    lower = mean(as.numeric(lower)),
+    upper = mean(as.numeric(upper))
+  )
 ```
 
 ```{r plot some QQ plots}
@@ -351,15 +401,15 @@ sliced_df <- bootstrap_ouptuts[bootstrap_ouptuts$temp == t, ]
 
 # Draw two plots next to each other
 par(mfrow = c(1, 2))
-#normal_density <- dbinom(27, size=100, prob=0.25)
+# normal_density <- dbinom(27, size=100, prob=0.25)
 zs <- seq(0, 1, 0.01)
 
-hist_ <- function(x, ...){
-  hist(x, breaks = 30, xlab = "Z", ylab = "",  yaxt='n', freq = FALSE, ...)
-  #lines(zs, normal_density, type = "l", col = "red", lwd = 2)
+hist_ <- function(x, ...) {
+  hist(x, breaks = 30, xlab = "Z", ylab = "", yaxt = "n", freq = FALSE, ...)
+  # lines(zs, normal_density, type = "l", col = "red", lwd = 2)
 }
 
-hist_(as.numeric(sliced_df$pi.hat), main = "Gaussian Distribution",xlim = c(0, 1))
+hist_(as.numeric(sliced_df$pi.hat), main = "Gaussian Distribution", xlim = c(0, 1))
 qqnorm(as.numeric(sliced_df$pi.hat))
 qqline(as.numeric(sliced_df$pi.hat), col = "blue", lwd = 2)
 ```
