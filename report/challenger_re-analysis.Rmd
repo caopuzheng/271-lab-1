@@ -19,7 +19,7 @@ In this study, we are investigating the effect of physical condition such as tem
 
 ## Research question
 
-Does a various physical conditions, in term of temperature and pressure, effect the odds of O-Rings failures on a shuttle?
+Do physical conditions, in term of temperature and pressure, affect the odds of O-Rings failures on a shuttle?
 
 # Data (20 points)
 
@@ -32,7 +32,7 @@ Does a various physical conditions, in term of temperature and pressure, effect 
 
 -   This EDA should begin with an inspection of the given dataset; examination of anomalies, missing values, potential of top and/or bottom code etc.
 
-```{r load packages for homework 2, message=FALSE}
+```{r load packages for homework 2, echo=FALSE, message=FALSE}
 # install.packages("MASS")
 # install.packages("ggplot2")
 # install.packages("sandwich")
@@ -64,27 +64,24 @@ knitr::opts_chunk$set(tidy.opts = list(width_cutoff = 100), tidy = TRUE)
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
-```{r read challenger data, message=FALSE}
+```{r read challenger data, echo=FALSE, message=FALSE}
 challenger <- read_csv("../data/raw/challenger.csv")
 ```
 
-```{r tabular EDA, message = FALSE}
-head(challenger)
+```{r tabular EDA, echo=FALSE, message=FALSE}
 glimpse(challenger)
 summary(challenger)
 describe(challenger)
 ```
 
-```{r Analysis of Response Variable}
-tab <- xtabs(~O.ring, data = challenger)
-names(tab)
-
-x <- as.numeric(names(tab))
-
-plot(x, tab,
-  type = "bar", main = "Number of O-Ring Failed by Flights",
-  xlab = "Number of O-rings failed", ylab = "Frequency"
-)
+```{r Analysis of Response Variable, echo=FALSE, message=FALSE}
+challenger %>%
+  ggplot(aes(x = O.ring, y = ..prop.., group = 1)) +
+  geom_bar(fill = "DarkBlue", color = "black") +
+  geom_text(stat = "count", aes(label = ..count..), vjust = -1) +
+  xlab("Number of Failed O Rings") +
+  ylab("Proportion") +
+  ylim(0, 1)
 ```
 
 ## Description
@@ -93,6 +90,13 @@ plot(x, tab,
 
 -   Describe the data that you are using. How is this data generated, what is the sampling process that brought it to your availability. If it is helpful, you might describe the population (i.e. the Random Variables) that exist and how samples are produced from these random variables.
 -   The authors use logistic regression to estimate the probability an O-ring will fail. In order to use this model, the authors needed to assume that each O-ring is independent for each launch. Discuss why this assumption is necessary and the potential problems with it. Note that a subsequent analysis helped to alleviate the authors' concerns about independence.
+
+----
+The data set used in this analysis contains 5 columns, Flight, Temp, Pressure, O.ring, Number. Flight is a unique identifier reperesenting each flight observed and recored and Number represents the total number of O-ring in each spacecraft, here each spacecraft contains 6 O-rings. The O.ring variable is a random variable that denotes the number of O-ring failed at each individual launch. Lastly, Temp and Pressure are both numerica values and are the physical condition measurements taken at each launch. 
+
+There are 24 launches in total and there are no missing values in any of the features in the data set. Temperature is shown to have 16 distinct values with a range between 53 to 81 and a mean of 69.57. Pressure have 3 distinct values with a range between 50 to 200 and a mean of 152. It is also worth noting that both temperature and pressure records are full integer value. In term of the response variable, number of failed O-rings, the majority of launch has 0 failed O-ring (16 out of 23). For the failed launch, there are 5 observations with 1 failed O-ring and 2 observations with 2 failed O-rings.
+ 
+In the original research, the researchers treated each of the 6 O-rings as independent for each of the 23 launches. In other words, the failure of one O-ring do not cause any of the other O-ring to fail. This assumption is necessary because of the limited number of data. Additionally, each of the O-rings has equal probability to be affected by either temperature or pressure condition. However, when considering each O-ring as independent, the researcher might not account for a fact that a single failed O-ring cause the entire launch to fail. While careful considerations between the independence affect between each O-ring is necessary, we will continue our analysis closely follow the independence assumption.
 
 ## Key Features
 
@@ -141,13 +145,8 @@ grid.arrange(p1, p2)
 grid.arrange(p3, p4)
 ```
 
-For our study, we noted two features, temperature and pressure, that most likely affect the odds of O-rings failure on a space shuttle.
-
-From the distribution and box plot, the number of O-rings failed has a higher distribution at the lower temperature.
-
-In term of pressure, the distribution plots showed that 0 failed O-rings at both high and low pressure while 2 failed O-rings showed a uniform distribution.
-
-However, it is noted that this plot does somewhat show that the number of O-rings failed is higher for higher pressure and lower for lower pressure.
+For our study, we noted two features, temperature and pressure, that most likely affect the odds of O-rings failure on a space shuttle.From the distribution and box plot, the number of O-rings failed has a higher distribution at the lower temperature.
+In term of pressure, the distribution plots showed that 0 failed O-rings at both high and low pressure while 2 failed O-rings showed a uniform distribution. However, it is noted that this plot does somewhat show that the number of O-rings failed is higher for higher pressure and lower for lower pressure. In the follow study, we will be using both temperature and pressure as explanatory variable to model the odd of each individual O-ring fail during the launch. Our goal is to shed some light into the inalienability of each of this feature and their statistical significant.
 
 # Analysis
 
@@ -157,7 +156,7 @@ However, it is noted that this plot does somewhat show that the number of O-ring
 
 1.  Estimate the logistic regression model that the authors present in their report -- include the variables as linear terms in the model. Evaluate, using likelihood ratio tests, the statistical significance of each explanatory variable in the model. Evaluate, using the context and data understanding that you have created in the **Data** section of this report, the practical significance of each explanatory variable in the model.
 
-```{r}
+```{r model 1 temp and pressure, echo=FALSE, message=FALSE}
 # Since there are 6 Orings on a shuttle
 # We define the failure rates as number of O Rings Failed out of 6 O Rings
 
@@ -167,14 +166,25 @@ mod1 <- glm(
   family = binomial(link = "logit"),
   data = challenger
 )
-summary(mod1)
+
+stargazer(mod1,
+  type = "text", omit.stat = "f",
+  report = ("vc*p"),
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  title = "Table 1: The Estimated Relationship Between
+          O-Rings Failure and Temperature/Pressure"
+)
 ```
+
+For the first model, we perform a logistic regression on the odds of O-ring failed response using both temperature and pressure The estimated model is 
+$y = 2.520 -0.98*Temp + 0.008*Pressure$. Using a Wald test, the model return a p-value of 0.029 for temperature and 0.270 for pressure Since the p-value for Temperature is below the 95% confident level, visualized by alpha=0.05 and one asterisks, Temperature is statistical significant to the model. The p-value for pressure is above this level and is considered as not statistically significant.   
 
 2.  Dalal, Fowlkes, and Hoadley (1989) chose to remove `pressure` from the model based on their likelihood ratio tests. Critically evaluate, using your test results and understanding of the question and data, whether `pressure` should be included in the model, or instead, `pressure` should not be included in the model. Your report needs to make a determination, argue why it is most appropriate choice, and make note of how (if at all) the model results are affected by the choice of including or excluding `pressure`.
 
-```{r}
+```{r LRT for model 1, echo=FALSE, message=FALSE}
 Anova(mod1, test = "LR")
 ```
+In order to test for the significant of Pressure, we use the Likelihood Ratio Test for each explanatory variable. For this test, we stated a Null hypothesis that $\beta_2 = 0$, or Pressure does not affect the odds of O-ring failure. From the test, we obtained a p-value for a Chi-squared distribution of 0.0228 for Temperature and 0.2145 for pressure. Like the Wald test, the p-value for Pressure is above the 95% confident level, alpha=0.05, so there is not enough evidence to reject the Null hypothesis and that Pressure provide no additional explanability to the model.
 
 ## Confidence Intervals (20 points)
 
@@ -393,6 +403,7 @@ agg_tbl <- bootstrap_ouptuts %>%
   )
 ```
 
+
 ```{r plot some QQ plots}
 # sliced the data on 1 temperature unit
 # we chose 31 here since that was what the Challenger launch at
@@ -413,6 +424,7 @@ hist_(as.numeric(sliced_df$pi.hat), main = "Gaussian Distribution", xlim = c(0, 
 qqnorm(as.numeric(sliced_df$pi.hat))
 qqline(as.numeric(sliced_df$pi.hat), col = "blue", lwd = 2)
 ```
+
 
 To produce a confidence interval, the authors used the 0.05 and 0.95 observed quantiles from the simulated distribution as their 90% confidence interval limits.
 
