@@ -293,7 +293,7 @@ curve(
 par(new = TRUE)
 ```
 
-> Intervals are wide for temperatures less than 65F is wide and short for temperatures greater than 65F.
+> Intervals are wide for temperatures less than 65F is wide and narrow for temperatures greater than 65F.
 > This is expected, because most of the data have temperatures greater than 65F.
 > The estimated interval for temperature equal to 30F is about (1,6); this illustrates that we have high variability for the expected number of incidents.
 
