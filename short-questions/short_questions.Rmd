@@ -1,5 +1,5 @@
 ---
-title: "Lab 1, Short Questions"
+title: "Lab 1, Short Questions - Ray Cao, Ken Trinh, Lisa Wu, Sophie Yeh"
 geometry: margin=1in
 output:
   pdf_document:
@@ -131,19 +131,19 @@ grid.arrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
 
 > 'Fill in: What do you observe in these boxplots?'
 >
-> \- For the sugar variable, we observe that:
+> \- For the standardized sugar variable, we observe that:
 >
 > 1)  Of the four shelves, Shelf 2 has the highest mean sugar but also has the smallest variance (consistency within the shelf);
 >
 > 2)  Shelf 3 has the lowest mean sugar, but also has relatively large variance among the items on the shelf.
 >
-> \- For the fat variable, we observe that
+> \- For the standardized fat variable, we observe that
 >
-> 1)  Of the four shelves, Shelf 2 has the highest mean fat but has relatively smaller variance, similar observation as for the sugar variable;
+> 1)  Of the four shelves, Shelf 2 has the highest mean fat, similar observation as for the sugar variable;
 >
 > 2)  Shelf 1 and 3 have lower fat, but relatively large variance
 >
-> \- For the sodium variable, we observe that
+> \- For the standardized sodium variable, we observe that
 >
 > 1)  Of the four shelves, Shelf 2, 3 and 4 have similar mean sodium, but Shelf 2 and 4 have relatively smaller variance.
 >
@@ -166,19 +166,19 @@ legend("topright",
 
 > 'Fill in: What do you observe in these parallel coordinates plots?
 >
-> For Shelf 2 (green), sugar contents are generally higher, follow by Shelf 1 (red).
+- For Shelf 2 (green), sugar contents are generally higher, follow by Shelf 1 (red).
 >
-> Shelf 3 (Blue) has the biggest variance in all categories.
+- Shelf 3 (Blue) has the biggest variance in all categories.
 >
-> In term of sodium content, Shelf 1 (red) generally shows the highest level.
+- In term of sodium content, Shelf 1 (red) generally shows the highest level.
 >
-> Shelf 4 (Black), also shows a lower trend on fat content compared to all other Shelves.'
+- Shelf 4 (Black) also shows a lower trend on fat content compared to all other Shelves.'
 
 > Fill in: Do content differences exist between the shelves?
 >
-> Yes based on the box plot, there are a clear visualization differences between the mean and variance for each individual contents among the shelves.
+- Yes. Based on the box plot, there are clear visualization differences between the mean and variance for each individual content among the shelves.
 >
-> For example, Shelf 2 generally higher sugar/fat content per serving size, which could extract a lot more sales among younger children.'
+- For example, Shelf 2 generally higher sugar/fat content per serving size, which could extract a lot more sales among younger children. Shelf 4 has relatively lower sugar, fat and sodium which will apeal to customers that focus on healthy selections. 
 
 \newpage
 
@@ -192,14 +192,13 @@ Show that there are no significant interactions among the explanatory variables 
 
 > Fill in: What do you think about ordinal data?
 >
-> Since argument can be made for both nominal vs ordinal scale for the Shelf level, we decided that taking account to ordinality scale is not desireable under this setting.
+-  Ordinal data works well in settings that group variables into ordered categories which have a natural order or rank based on some hierarchal scale, such as from high to low value.
 >
-> The ordinal data referes to the location of the shelves.
-> Since the shelf system mentioned in this problem is purely due to height.
-> Shelf 1 is at the lowest height, follows by Shelf 2, Shelf 3, and Shelf 4.
-> However, this ordering does not necssary related to to the expected strategical importance from sales perspective.
+-  In this data, the shelf system mentioned in this problem is purely due to height.
 >
-> Along with the graphs, we believe that a natural progression order 1 \< 2 \< 3 \< 4 is not presence making the shelves placement nominal.'
+-  Shelf 1 is at the lowest height, follows by Shelf 2, Shelf 3, and Shelf 4. However, this ordering does not necessarily related to the expected strategical importance from sales perspective.
+>
+-  Along with the graphs, we believe that a natural or strategic value progression order 1 \< 2 \< 3 \< 4 is not present and therefore there is no need to account for ordinality here.
 
 ```{r multinomial logit regressions}
 model_cereal_shelves_linear <- multinom(
@@ -233,14 +232,18 @@ summary(model_cereal_shelves_cross)
 lrt_cereal_main_effects <- Anova(model_cereal_shelves_linear, test = "LR")
 lrt_cereal_main_effects
 ```
+```{r echo=FALSE, include=FALSE}
+p_value <- lrt_cereal_main_effects$`Pr(>Chisq)`
+p_value
+```
 
-> For the first model with a linear effect, we are using a LRT test for each individual explanatory variable.
+> 'Fill in: Write about what you learn as a result of these tests, using inline code evaluation.
 >
-> The resulted p-values for sugar and sodium contents are both lower than alpha = 0.001, or at 99.99% confidence interval and visualized by three asterisk.
-> This suggest that sugar and sodium content are statistically significant to the model.
+> \- For the first model with a linear effect, we are using a LRT test for each individual explanatory variable.
 >
-> The fat content estimated parameter resulted in a p-value of 0.1522, which is higher than all proposed alpha value.
-> Thus, fat content is not statistically significant to the model.
+- The resulted p-values for sugar and sodium contents are $`r p_value[1]`$ and $`r p_value[3]`$, both lower than alpha = 0.001, or at 99.99% confidence interval and visualized by three asterisk. This suggest that sugar and sodium content are statistically significant to the model.
+>
+- The LR test shows that the fat content parameter has a p-value of $`r round(p_value[2],4)`$, which is higher than all proposed alpha value. Thus, fat content is not statistically significant to the model.
 
 \newpage
 
@@ -251,12 +254,18 @@ lrt_cereal_quadratic_effects <- anova(model_cereal_shelves_linear,
 )
 lrt_cereal_quadratic_effects
 ```
+```{r echo=FALSE, include=FALSE}
+p_value_2 <- lrt_cereal_quadratic_effects$`Pr(Chi)`[2]
+p_value_2
+```
 
-> For the second model with quadratic effect.
-> We are using the LRT for a Null hypothesis that the interaction terms among the explanatory variable have estimated parameters of 0, and an alternate hypothesis that they are not.
-> The test resulted in a p-value of 0.3239 from a chi-squared distribution.
+> 'Fill in: Write about what you learn as a result of these tests, using inline code evaluation.
+
+> \- For the second model with interaction terms, we used the LRT to test a Null hypothesis that the interaction terms among the explanatory variable have estimated betas of 0, and an alternate hypothesis that at lease one of the betas is not zero.
 >
-> Since the p-value is greater than the alpha = 0.05 or at 95% confidence level, the interaction terms are not statistically significant.
+- The test resulted in a p-value of $`r round(p_value_2,4)`$ from a chi-squared distribution.
+>
+- Since the p-value is greater than the alpha = 0.05 or at 95% confidence level, there is not enough evidence to reject the null hypothesis.  The interaction terms are not statistically significant.
 
 \newpage
 
@@ -299,11 +308,12 @@ aj_shelf_probs <- predict(model_cereal_shelves_linear,
 data.frame(pi.hat = round(aj_shelf_probs, 3) * 100)
 ```
 
+
 > 'Fill this in: Where does your model predict apple jacks will be placed?
 >
-> Based on the outputs, Shelf 2 has the highest probability of 47.2% follows by Shelf 4 with a probability of 27.4%.
+- Based on the outputs, Shelf 2 has the highest probability of 47.2% followed by Shelf 4 with a probability of 27.4%.
 >
-> Since Shelf 2 has the highest probability, Apple Jack is predicted to be placed on Shelf 2.
+- Since Shelf 2 has the highest probability, Apple Jack is predicted to be placed on Shelf 2.
 
 \newpage
 
@@ -365,13 +375,15 @@ ggplot(
 
 > 'Fill this in: What message does your plot give?
 >
-> Lower sugar contents cereal has higher probability to be place on Shelf 3 and 4.
-> Higher sugar contents have higher probability of being place on Shelf 2.
+- Lower sugar contents cereal has higher probability to be place on Shelf 3 and 4.
 >
-> There seem to be a low probability of cereals being placed on Shelf 1 despite of sugar content, however the trend does follow that of Shelf 2.
-> This make sense because Shelf 1 and 2 are have a lower height than Shelf 3 and 4.
+- Higher sugar contents have higher probability of being place on Shelf 2.
 >
-> High sugar contents cereal generally attract younger demographics than low sugar contents cereal, which older demographics might deem as healthier options.'
+- There seem to be a low probability of cereals being placed on Shelf 1 despite of sugar content, however the trend does follow that of Shelf 2 to some degree.
+> 
+- This make sense because Shelf 1 and 2 are have a lower height than Shelf 3 and 4 which are more accessible by younger customers.
+>
+- High sugar contents cereal generally attract younger demographics than low sugar contents cereal, which older demographics might deem as healthier options.'
 
 \newpage
 
@@ -409,31 +421,32 @@ odds_ratios <- cbind(c.value, cbind(OR_2_1, OR_CI_2_1), cbind(OR_3_1, OR_CI_3_1)
 odds_ratios
 ```
 
+
 > 'Fill this in: What do you learn about each of these variables?
 >
-> Considering only the **statistically significant results at 95%** (whose confidence interval doesn't contain 1 in it), we have the following findings:
+> \- For sugar:
 >
-> For sugar:
+> 1) The odds of a cereal being place on Shelf 2 is 2.06 times (between 0.1436 to 29.6766 times at 95% confidence level) vs being place on Shelf 1, for a 0.2692 (one sd) increase in sugar content holding all other variable constant.
 >
-> The odds of a cereal being place on Shelf 3 is 0.04 times (between 0.0028 to 0.4918 times at 95% confidence level) vs being place on Shelf 1, for a 0.2692 (one sd) increase in sugar content holding all other variable constant.
+> 2) The odds of a cereal being place on Shelf 3 is 0.04 times (between 0.0028 to 0.4918 times at 95% confidence level) vs being place on Shelf 1, for a 0.2692 (one sd) increase in sugar content holding all other variable constant.
 >
-> The odds of a cereal being place on Shelf 4 is 0.05 times (between 0.0036 to 0.6084 times at 95% confidence level) vs being place on Shelf 1, for a 0.2692 (one sd) increase in sugar content holding all other variable constant.
+> 3) The odds of a cereal being place on Shelf 4 is 0.05 times (between 0.0036 to 0.6084 times at 95% confidence level) vs being place on Shelf 1, for a 0.2692 (one sd) increase in sugar content holding all other variable constant.
 >
-> This agrees with our observation that, higher sugar cereals tends to have higher probability / odds ratio to be on shelf 1 or 2, vs shelf 3 or 4.
+> This agrees with our observation from the plots that, higher sugar cereals tends to have higher probability / odds ratio to be on shelf 2 or 1, vs shelf 3 or 4.\
 >
-> For fat:
+> \- For fat:
 >
-> Fat level didn't seem to provide any significant association across different shelves, so we are skipping the interpretation here (the odds ratio would have similar interpretation as sugar).
+> Fat level didn't seem to provide any significant association across different shelves, so we are skipping the interpretation here (the odds ratio would have similar interpretation as sugar).\
 >
-> For sodium:
+> \- For sodium:
 >
-> The odds of a cereal being place on Shelf 2 is 0.018 times (between 0.0007 to 0.4389 times at 95% confidence level) vs being place on Shelf 1, for a 0.2298 (one sd) increase in sodium content holding all other variable constant.
+> 1) The odds of a cereal being place on Shelf 2 is 0.018 times (between 0.0007 to 0.4389 times at 95% confidence level) vs being place on Shelf 1, for a 0.2298 (one sd) increase in sodium content holding all other variable constant.
 >
-> The odds of a cereal being place on Shelf 3 is 0.0032 times (between 0.0001 to 0.1224 times at 95% confidence level) vs being place on Shelf 1, for a 0.2298 (one sd) increase in sodium content holding all other variable constant.
+> 2) The odds of a cereal being place on Shelf 3 is 0.0032 times (between 0.0001 to 0.1224 times at 95% confidence level) vs being place on Shelf 1, for a 0.2298 (one sd) increase in sodium content holding all other variable constant.
 >
-> The odds of a cereal being place on Shelf 4 is 0.0034 times (between 0.0001 to 0.1302 times at 95% confidence level) vs being place on Shelf 1, for a 0.2298 (one sd) increase in sodium content holding all other variable constant.
+> 3) The odds of a cereal being place on Shelf 4 is 0.0034 times (between 0.0001 to 0.1302 times at 95% confidence level) vs being place on Shelf 1, for a 0.2298 (one sd) increase in sodium content holding all other variable constant.
 >
-> Overall, it seem shelf 1 have very high sodium cereals, which is inline with our observation - thus increasing the level of sodium would make it very likely to be on shelf 1 rather than other shelves.
+> 4) Overall, it seem shelf 1 have very high sodium cereals, which is inline with our observation from the plots - thus increasing the level of sodium would make it very likely to be on shelf 1 rather than other shelves.
 
 \newpage
 
@@ -478,8 +491,9 @@ drinks %>%
   xlab("Day of Week")
 ```
 
--   We can observe that the day of the week seem to have association with the number of drinks consumed, and Saturday tends to have the highest number of drinks in our sample.
--   We will limit the study to observations from only Saturday, as the researchers stated that they are interested in the relationship between alcohol consumption and negative relationship interactions, and we need to remove the confounding effect of day of the week.
+- We can observe that the day of the week seem to have association with the number of drinks consumed, and Saturday tends to have the highest number of drinks in our sample.
+
+- We will limit the study to observations from only Saturday, as the researchers stated that they are interested in the relationship between alcohol consumption and negative relationship interactions, and we need to remove the confounding effect of day of the week.
 
 \newpage
 
@@ -492,9 +506,9 @@ sat_drinks <- drinks %>%
 pairs(sat_drinks)
 ```
 
--   We spot "numall" (number of drinks) appear to have a positive correlation with "desired", which is expected as the more one desire, the more one might end up drinking.
+-   We spot "numall" (number of drinks) appear to have a positive correlation with "desired", which is expected as the more one desires to drink, the more likely one might end up drinking, everything else equal.
 
--   There doesn't seem to have any evidence of perfect co-linearity based on the plots.
+-   There doesn't seem to have any evidence of perfect co-linearity of the explanatory variables based on the plots.
 
 \newpage
 
@@ -530,8 +544,11 @@ sat_drinks %>%
 ```
 
 -   The number of drinks is right-skewed with a lower bound of 0, which is expected.
+
 -   The desire to drink seems balanced within our sample.
--   Negative Relationship is heavily right-skewed, with 70, or 79% of the observations with 0 negative relationship. This might be a problem given the limited sample size. We might not be able to properly test this hypothesis.
+
+-   Negative Relationship is heavily right-skewed, with 70 count or 79% of the observations with 0 negative relationship. This might be a problem of using nrel as the explanatory variable, given the limited sample size. We might not be able to properly test this hypothesis.
+
 -   Trait self-esteem is left-skewed with a cap of 4.0 and min of 2.0.
 
 \newpage
@@ -556,7 +573,7 @@ p2_2 <- sat_drinks %>%
 p2_1 / p2_2
 ```
 
-Given the limited number of observations that have more than 1 negative relationship reading, it's very hard to see a trend via the bi-variant visualization.
+Given the limited number of observations that have 1 or more negative relationship reading, it's very hard to see a trend via the bi-variante visualization.
 
 \newpage
 
@@ -585,14 +602,13 @@ p3_2 <- sat_drinks %>%
 p3_1 | p3_2
 ```
 
--   \
-    From the first plot, we can see that at a given negative relationship event, we tend to observe more number of drinks for low self-esteem observations (in red) than high self-esteem observations.\
+- From the first plot, we can see that at a given negative relationship event, we tend to observe more number of drinks for low self-esteem observations (in red) than high self-esteem observations.\
 
-    This is consistent with the assumption that the researcher has.\
+    This is consistent with the assumption that the researcher has.
 
--   From the first plot, we can see that at a given negative relationship event, we tend to observe more number of drinks for observations with less positive relationship event (in red) than high positive relationship observations.\
+- From the second plot, we can see that at a given negative relationship event, we tend to observe more number of drinks for observations with less positive relationship event (in red) than high positive relationship observations.\
 
-    This make us wonder if including the negative relationship itself is enough to predict the alcohol consumption, given the negative relationship effects could well be offset by positive relationship effects.
+- This make us wonder if including the negative relationship itself is enough to predict the alcohol consumption, given the negative relationship effects could well be offset by positive relationship effects.
 
 \newpage
 
@@ -615,7 +631,9 @@ summary(mod_nrel)
 
 -   Based on the output, we failed to reject the null hypothesis that negative relationship has no impact on the number of drinks consumed.
 
--   We believe this is mostly because the lack of data: only 19 observations among a total of 89 have non-zero negative relationship event.
+-   We believe this could be due to insufficient data: only 19 observations among a total of 89 have non-zero negative relationship events.  
+
+-   We would recommend collecting more observations to conduct the test to evaluate negative relationship event vs. the number of drinks
 
 \newpage
 
@@ -633,9 +651,25 @@ summary(mod_nrel_and_prel)
 
 -   Using the Poisson model, we still fail to reject the null hypothesis that negative or positive relationship has no impact on the number of drinks consumed.
 
--   Interestingly, the coefficient on positive relationship interactions is positive, meaning there is actually an predicted increase in alcohol consumption with the increase in positive relationship interactions, so our theory has completely fail in this case.
+-   Interestingly, the coefficient on positive relationship interactions is positive, meaning there is actually an predicted increase in alcohol consumption with the increase in positive relationship interactions, so the researcher's theory has completely fail in this case.
 
-    \newpage
+\newpage
+
+```{r}
+mod_nrel_and_prel_interact <-
+  sat_drinks %>% glm(
+    formula = numall ~ nrel + prel + nrel:prel,
+    family = poisson(link = log)
+  )
+
+summary(mod_nrel_and_prel_interact)
+```
+-   We added the interaction term of nrel and prel to the model, to capture the interaction term between negative relationship events and positive relationship events concurring and how that affects the number of alcohol assumptions.
+
+-   Using the Poisson model, there is strong evidence to reject the null hypothesis that interaction between negative or positive relationship has no impact on the number of drinks consumed. Interesting, the presence of positive events concurring with negative events has positive beta (0.06) which increases the number of drinks.
+
+
+\newpage
 
 ```{r}
 mod_desired <-
@@ -645,9 +679,8 @@ summary(mod_desired)
 ```
 
 -   Lastly, we use a linear regression model to predict the desire to drink, using the negative relationship event as the sole explanatory variable.
--   Again, we fail to reject the null hypothesis that negative relationship events have no impact on the desire to drink.
-
-Overall, we believe there is no strong evidence that negative relationship events would impact the number of drinks one would consume, given the data set we have chosen.
+-   We fail to reject the null hypothesis that negative relationship events have no impact on the desire to drink.
+-   Overall, we believe there is no strong evidence that negative relationship events would impact the number of drinks one would consume or the desire to drink, given the data set we have.
 
 \newpage
 
@@ -665,12 +698,12 @@ model.neg.relationship.rosn <- sat_drinks %>%
 summary(model.neg.relationship.rosn)
 ```
 
--   Using the Poisson regression model, we reject the null hypothesis that the negative relationship has no impact on drinking.\
+-   Using the Poisson regression model, we reject the null hypothesis that the negative relationship has no impact on drinking. \
 
-    Given the coefficient of 1.07, we believe more negative relationship will cause more drinking.
+    Given the coefficient of 1.07, we believe more negative relationship will cause more drinking.\
 
 -   We also reject the null hypothesis that there is no interactions between negative relationship and trait self-esteem.\
 
-    Given the coefficient of -0.29, we believe that for people with high self-esteem, their drinking behavior less likely to be affected by an increase in negative relationship events, compared with people with low self-esteem.
+    Given the coefficient of -0.29, we believe that for people with high self-esteem, their drinking behavior is less likely to be affected by an increase in negative relationship events, compared with people with low self-esteem.\
 
--   Our model supported the hypothesis of the researcher.
+-   Our model seems to support the hypothesis of the researcher.  Again, we want to call out the data limitation on negative relationship events (only 19 observations among a total of 89 have non-zero negative relationship events) which may not be sufficient for the test.
