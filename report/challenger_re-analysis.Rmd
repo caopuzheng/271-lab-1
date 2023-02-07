@@ -58,6 +58,10 @@ library(stargazer)
 library(mcprofile)
 library(Hmisc)
 library(gridExtra)
+
+theme_set(theme_minimal())
+knitr::opts_chunk$set(tidy.opts = list(width_cutoff = 100), tidy = TRUE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
 ```{r read challenger data, echo=FALSE, message=FALSE}
@@ -65,9 +69,9 @@ challenger <- read_csv("../data/raw/challenger.csv")
 ```
 
 ```{r tabular EDA, echo=FALSE, message=FALSE}
-glimpse(challenger)
-summary(challenger)
-describe(challenger)
+# glimpse(challenger)
+# summary(challenger)
+# describe(challenger)
 ```
 
 ```{r Analysis of Response Variable, echo=FALSE, message=FALSE}
@@ -163,24 +167,32 @@ mod1 <- glm(
   data = challenger
 )
 
+# todo: add the ylabs and xlabs, rename all the columns
 stargazer(mod1,
   type = "text", omit.stat = "f",
   report = ("vc*p"),
   star.cutoffs = c(0.05, 0.01, 0.001),
-  title = "Table 1: The Estimated Relationship Between
-          O-Rings Failure and Temperature/Pressure"
+  title = "Table 1: The Estimated Relationship Between O-Rings Failure and Temperature/Pressure"
 )
 ```
 
-For the first model, we perform a logistic regression on the odds of O-ring failed response using both temperature and pressure The estimated model is 
-$y = 2.520 -0.98*Temp + 0.008*Pressure$. Using a Wald test, the model return a p-value of 0.029 for temperature and 0.270 for pressure Since the p-value for Temperature is below the 95% confident level, visualized by alpha=0.05 and one asterisks, Temperature is statistical significant to the model. The p-value for pressure is above this level and is considered as not statistically significant.   
+For the first model, we perform a logistic regression on the odds of O-ring failed response using both temperature and pressure.
+
+The estimated model is $y = 2.520 -0.98*Temp + 0.008*Pressure$. 
+
+Using a Wald test, the model return a p-value of 0.029 for temperature and 0.270 for pressure. Since the p-value for Temperature is below the 95% confident level, Temperature is statistical significant to the model. The p-value for pressure is above this level and is considered not statistically significant.   
 
 2.  Dalal, Fowlkes, and Hoadley (1989) chose to remove `pressure` from the model based on their likelihood ratio tests. Critically evaluate, using your test results and understanding of the question and data, whether `pressure` should be included in the model, or instead, `pressure` should not be included in the model. Your report needs to make a determination, argue why it is most appropriate choice, and make note of how (if at all) the model results are affected by the choice of including or excluding `pressure`.
 
-```{r LRT for model 1, echo=FALSE, message=FALSE}
+``` {r LRT for model 1, echo=FALSE, message=FALSE}
 Anova(mod1, test = "LR")
 ```
-In order to test for the significant of Pressure, we use the Likelihood Ratio Test for each explanatory variable. For this test, we stated a Null hypothesis that $\beta_2 = 0$, or Pressure does not affect the odds of O-ring failure. From the test, we obtained a p-value for a Chi-squared distribution of 0.0228 for Temperature and 0.2145 for pressure. Like the Wald test, the p-value for Pressure is above the 95% confident level, alpha=0.05, so there is not enough evidence to reject the Null hypothesis and that Pressure provide no additional explanability to the model.
+
+In order to test for the significant of Pressure, we use the Likelihood Ratio Test for each explanatory variable. For this test, we stated a Null hypothesis that $\beta_2 = 0$, or Pressure does not add significant explanationary power for the odds ratio of O-ring failure, on top of the Temp in the model. 
+
+From the test, we obtained a p-value for a Chi-squared distribution of 0.0228 for Temperature and 0.2145 for pressure. Like the Wald test, the p-value for Pressure is above the 95% confident level, alpha=0.05, so there is not enough evidence to reject the Null hypothesis.
+
+Considering both test resutls, we conclude that Pressure provide no additional explanability to the model. Excluding it from the model is especially recommended in this case, considering the sample size of 23 observations, the drop in the degree of freedom is 5% when we add one additonal explanationaryv variable. Keeping the model simple and easy to interpret would also help with the further study. 
 
 ## Confidence Intervals (20 points)
 
@@ -198,36 +210,33 @@ Specific requirements for these plots:
 -   Use a temperature range of 31° to 81° on the x-axis even though the minimum temperature in the data set was 53°.\
 -   Include the 95% Wald confidence interval bands for $\pi$ on the plot. Describe, in your analysis of these plots, why the bands much wider for lower temperatures than for higher temperatures?
 
-```{r}
-##############################################################################
-# Estimate the logistic regression model
-##############################################################################
+```{r Estimate the logistic regression model}
 mod2 <- glm(
   formula = cbind(O.ring, Number - O.ring) ~ Temp,
   family = binomial(link = "logit"),
   data = challenger
 )
-summary(mod2)
 
 mod3 <- glm(
   formula = cbind(O.ring, Number - O.ring) ~ Temp + I(Temp^2),
   family = binomial(link = "logit"),
   data = challenger
 )
-summary(mod3)
+
+# todo: add the ylabs and xlabs, rename all the columns
+stargazer(mod2, mod3,
+  type = "text", omit.stat = "f",
+  report = ("vc*p"),
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  title = "Table 1: The Estimated Relationship Between O-Rings Failure and Temperature/Pressure"
+)
 ```
 
-```{r}
-##############################################################################
-# 2. Determine if quadratic term is needed
-##############################################################################
+```{r Determine if quadratic term is needed}
 anova(mod2, mod3, test = "Chisq")
 ```
 
-```{r}
-##############################################################################
-# 3. Pi vs Temp
-##############################################################################
+```{r Pi vs Temp prediction and CI}
 mod.beta <- mod2$coefficients
 # Reproduce the graph overlaying the same result from the linear model as a comparison
 curve(
@@ -235,62 +244,57 @@ curve(
   xlim = c(31, max(challenger$Temp)),
   ylim = c(0, 1),
   col = "blue",
-  main = expression(pi == frac(
-    e^(z + coef[inc] * Temp),
-    1 + e^(z + coef[inc] * Temp)
-  )),
-  xlab = expression(Temp), ylab = expression(pi)
+  sub = expression(pi == frac(
+    e^(beta[0] + beta[1] * Temp),
+    1 + e^(beta[0] + beta[1] * Temp)
+  )), # this writes the formula below the curve
+  # TODO: can we above formula floating?
+  main = "Probability of O-ring Failure vs. Temp",
+  xlab = "",
+  ylab = expression(pi),
 )
 par(new = TRUE)
 
-
 # calculate true wald confidence interval at temperature
-wald.CI.true.coverage <- function(mod, temp) {
+wald.CI.true.coverage <- function(mod, x_value) {
   alpha <- 0.5
-  predict.data <- data.frame(Temp = temp)
+  predict.data <- data.frame(Temp = x_value)
   linear.pred <- predict(object = mod, newdata = predict.data, type = "link", se = TRUE)
-  pi.hat <- exp(linear.pred$fit) / (1 + exp(linear.pred$fit))
   CI.lin.pred <- linear.pred$fit + qnorm(p = c(alpha / 2, 1 - alpha / 2)) * linear.pred$se.fit
   CI.pi <- exp(CI.lin.pred) / (1 + exp(CI.lin.pred))
-  wald.df <- round(data.frame(temp, lower = CI.pi[1], upper = CI.pi[2]), 4)
+  wald.df <- round(data.frame(x_value, lower = CI.pi[1], upper = CI.pi[2]), 4)
   return(wald.df)
 }
 
-temp.seq <- seq(31, 81, by = 1)
-wald.CI.true.matrix <- matrix(data = NA, nrow = length(temp.seq), ncol = 3)
+x_seq <- seq(31, 81, by = 1)
+wald.CI.true.matrix <- matrix(data = NA, nrow = length(x_seq), ncol = 3)
 counter <- 1
-for (temp in temp.seq) {
-  wald.df2 <- wald.CI.true.coverage(mod2, temp)
-  wald.CI.true.matrix[counter, ] <- c(temp, wald.df2$lower, wald.df2$upper)
+for (x_value in x_seq) {
+  wald.df2 <- wald.CI.true.coverage(mod2, x_value)
+  wald.CI.true.matrix[counter, ] <- c(x_value, wald.df2$lower, wald.df2$upper)
   counter <- counter + 1
 }
 wald.CI.true.matrix[1:5, ]
 
-# plot lower bound
-lines(
-  x = temp.seq,
-  y = wald.CI.true.matrix[, 2],
-  ylim = c(0, 1),
-  type = "l",
-  lty = "dotted",
-  col = "red"
-)
+# plot lower and upper bounds to the existing plot
+for (matrix_ind in c(2, 3)) {
+  lines(
+    x = x_seq,
+    y = wald.CI.true.matrix[, matrix_ind],
+    ylim = c(0, 1),
+    type = "l",
+    lty = "dotted",
+    col = "red"
+  )
+}
+```
 
-# plot upper bound
-lines(
-  x = temp.seq,
-  y = wald.CI.true.matrix[, 3],
-  ylim = c(0, 1),
-  type = "l",
-  lty = "dotted",
-  col = "red"
-)
 
-##############################################################################
-# 4. Graph Expected number of failures vs Temp
-##############################################################################
+```{r Graph Expected number of failures vs Temp}
 curve(
-  expr = 6 * exp(mod.beta[1] + mod.beta[2] * x) / (1 + exp(mod.beta[1] + mod.beta[2] * x)),
+  expr = 6 * exp(
+    mod.beta[1] + mod.beta[2] * x
+  ) / (1 + exp(mod.beta[1] + mod.beta[2] * x)),
   xlim = c(31, max(challenger$Temp)),
   ylim = c(0, 6),
   col = "blue",
@@ -299,8 +303,12 @@ curve(
 par(new = TRUE)
 ```
 
-> Intervals are wide for temperatures less than 65F is wide and short for temperatures greater than 65F.
+> Intervals are wide for temperatures less than 65F is wide and narrow for temperatures greater than 65F.
+
+//TODO: talk about this: seems wrong? 
 > This is expected, because most of the data have temperatures greater than 65F.
+> This is because since $\beta_1$ is negative, as 
+
 > The estimated interval for temperature equal to 30F is about (1,6); this illustrates that we have high variability for the expected number of incidents.
 
 3.  The temperature was 31° at launch for the Challenger in 1986. Estimate the probability of an O-ring failure using this temperature, and compute a corresponding confidence interval. Discuss what assumptions need to be made in order to apply the inference procedures.
@@ -349,34 +357,36 @@ CI.upper <- NULL
 
 for (i in 1:100) {
   challenger_resampled <- NULL
-  
+
   # creating a resampled data from the original dataset with replacement
-  challenger_resampled <- challenger[sample(nrow(challenger), size=23, replace = TRUE), ]
-  
+  challenger_resampled <- challenger[sample(nrow(challenger), size = 23, replace = TRUE), ]
+
   # construct a model from the new resampled dataset
-  mod_resample <- glm(formula=cbind(O.ring, Number-O.ring)~Temp,
-              family = binomial(link="logit"),
-              data=challenger_resampled)
+  mod_resample <- glm(
+    formula = cbind(O.ring, Number - O.ring) ~ Temp,
+    family = binomial(link = "logit"),
+    data = challenger_resampled
+  )
   output <- NULL
   conf.lower <- NULL
   conf.upper <- NULL
   tprime <- NULL
   # run the model though to obtain the output
   for (t in 10:100) {
-    new.data <- data.frame('Temp' = t)
-    pred.prob <- predict(mod_resample, newdata = new.data, type='link', se = TRUE)
-    
+    new.data <- data.frame("Temp" = t)
+    pred.prob <- predict(mod_resample, newdata = new.data, type = "link", se = TRUE)
+
     # compute probability and CI
-    pi <- exp(pred.prob$fit)/(1+exp(pred.prob$fit))
-    linear.Wald.CI <- pred.prob$fit + qnorm(p=c(0.05, 0.95))*pred.prob$se
-    Wald.CI <- exp(linear.Wald.CI)/(1+exp(linear.Wald.CI))
+    pi <- exp(pred.prob$fit) / (1 + exp(pred.prob$fit))
+    linear.Wald.CI <- pred.prob$fit + qnorm(p = c(0.05, 0.95)) * pred.prob$se
+    Wald.CI <- exp(linear.Wald.CI) / (1 + exp(linear.Wald.CI))
     # append data to array
     tprime <- c(tprime, t)
     output <- c(output, pi)
     conf.lower <- c(conf.lower, Wald.CI[1])
     conf.upper <- c(conf.upper, Wald.CI[2])
   }
-  
+
   # append each bootstrap run
   temp <- c(temp, tprime)
   pi.hat <- c(pi.hat, output)
@@ -384,13 +394,18 @@ for (i in 1:100) {
   CI.upper <- c(CI.upper, conf.upper)
 }
 
-bootstrap_ouptuts <- data.frame(temp = temp, pi.hat = pi.hat, 
-                                lower = CI.lower, upper = CI.upper)
+bootstrap_ouptuts <- data.frame(
+  temp = temp, pi.hat = pi.hat,
+  lower = CI.lower, upper = CI.upper
+)
 
-agg_tbl <- bootstrap_ouptuts %>% group_by(temp) %>% 
-               summarise(pi.hat = mean(pi.hat), 
-                         lower = mean(lower), 
-                         upper = mean(upper)) 
+agg_tbl <- bootstrap_ouptuts %>%
+  group_by(temp) %>%
+  summarise(
+    pi.hat = mean(pi.hat),
+    lower = mean(lower),
+    upper = mean(upper)
+  )
 ```
 
 

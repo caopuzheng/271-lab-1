@@ -290,7 +290,7 @@ stand02 <- function(new_data, original_data, col_names) {
     min_val <- min(original_data[col_name] / original_data["size_g"])
     max_val <- max(original_data[col_name] / original_data["size_g"])
 
-    new_col_name <- substring(col_name, 0, unlist(gregexpr('_', col_name))[1] - 1)
+    new_col_name <- substring(col_name, 0, unlist(gregexpr("_", col_name))[1] - 1)
     new_data[new_col_name] <- (new_data[col_name] / new_data["size_g"] - min_val) / (max_val - min_val)
   }
   return(new_data)
@@ -594,7 +594,7 @@ p3_2 <- sat_drinks %>%
   mutate(high_positive_relationship = prel > median(prel)) %>%
   ggplot(aes(x = nrel, y = numall, color = high_positive_relationship)) +
   geom_point() +
-  coord_quickmap()+ 
+  coord_quickmap() +
   ylab("Number Of Drinks") +
   xlab("Negative Relationship") +
   scale_color_discrete(name = "Positive Relationship", labels = c("Low", "High"))
@@ -658,7 +658,7 @@ summary(mod_nrel_and_prel)
 ```{r}
 mod_nrel_and_prel_interact <-
   sat_drinks %>% glm(
-    formula = numall ~ nrel + prel + nrel: prel,
+    formula = numall ~ nrel + prel + nrel:prel,
     family = poisson(link = log)
   )
 
@@ -696,7 +696,6 @@ model.neg.relationship.rosn <- sat_drinks %>%
     family = poisson(link = "log")
   )
 summary(model.neg.relationship.rosn)
-
 ```
 
 -   Using the Poisson regression model, we reject the null hypothesis that the negative relationship has no impact on drinking. \
