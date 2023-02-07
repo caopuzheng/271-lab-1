@@ -336,7 +336,7 @@ To do this:
 2.  Estimate a model for each dataset.
 3.  Compute the effect at a specific temperature of interest.
 
-```{r resample with replacement}
+```{r resample with replacement, echo = FALSE, message=FALSE}
 # TODO: create a for loop to do this,
 # for each data set:
 # for each model from the resulting data set:
@@ -349,58 +349,52 @@ CI.upper <- NULL
 
 for (i in 1:100) {
   challenger_resampled <- NULL
-
+  
   # creating a resampled data from the original dataset with replacement
-  challenger_resampled <- challenger[sample(nrow(challenger), size = 23, replace = TRUE), ]
-
+  challenger_resampled <- challenger[sample(nrow(challenger), size=23, replace = TRUE), ]
+  
   # construct a model from the new resampled dataset
-  mod_resample <- glm(
-    formula = cbind(O.ring, Number - O.ring) ~ Temp,
-    family = binomial(link = "logit"),
-    data = challenger_resampled
-  )
-
-
+  mod_resample <- glm(formula=cbind(O.ring, Number-O.ring)~Temp,
+              family = binomial(link="logit"),
+              data=challenger_resampled)
+  output <- NULL
+  conf.lower <- NULL
+  conf.upper <- NULL
+  tprime <- NULL
   # run the model though to obtain the output
   for (t in 10:100) {
-    new.data <- data.frame("Temp" = t)
-
-
+    new.data <- data.frame('Temp' = t)
+    pred.prob <- predict(mod_resample, newdata = new.data, type='link', se = TRUE)
+    
     # compute probability and CI
-    predict.data <- matrix(
-      data = c(1, t),
-      nrow = 1,
-      ncol = params
-    )
-    linear.combo <- mcprofile(object = mod2, CM = predict.data)
-    linear.CI <- confint(linear.combo, level = 0.95)
-    logit.CI <- exp(linear.CI$confint) / (1 + exp(linear.CI$confint))
-    pi <- exp(linear.CI$estimate) / (1 + exp(linear.CI$estimate))
-
-    # append each bootstrap run
-    temp <- c(temp, t)
-    pi.hat <- c(pi.hat, pi$Estimate)
-    CI.lower <- c(CI.lower, logit.CI$lower)
-    CI.upper <- c(CI.upper, logit.CI$upper)
+    pi <- exp(pred.prob$fit)/(1+exp(pred.prob$fit))
+    linear.Wald.CI <- pred.prob$fit + qnorm(p=c(0.05, 0.95))*pred.prob$se
+    Wald.CI <- exp(linear.Wald.CI)/(1+exp(linear.Wald.CI))
+    # append data to array
+    tprime <- c(tprime, t)
+    output <- c(output, pi)
+    conf.lower <- c(conf.lower, Wald.CI[1])
+    conf.upper <- c(conf.upper, Wald.CI[2])
   }
+  
+  # append each bootstrap run
+  temp <- c(temp, tprime)
+  pi.hat <- c(pi.hat, output)
+  CI.lower <- c(CI.lower, conf.lower)
+  CI.upper <- c(CI.upper, conf.upper)
 }
 
-bootstrap_ouptuts <- data.frame(
-  temp = temp, pi.hat = pi.hat,
-  lower = CI.lower, upper = CI.upper
-)
+bootstrap_ouptuts <- data.frame(temp = temp, pi.hat = pi.hat, 
+                                lower = CI.lower, upper = CI.upper)
 
-agg_tbl <- bootstrap_ouptuts %>%
-  group_by(temp) %>%
-  summarise(
-    pi.hat = mean(as.numeric(pi.hat)),
-    lower = mean(as.numeric(lower)),
-    upper = mean(as.numeric(upper))
-  )
+agg_tbl <- bootstrap_ouptuts %>% group_by(temp) %>% 
+               summarise(pi.hat = mean(pi.hat), 
+                         lower = mean(lower), 
+                         upper = mean(upper)) 
 ```
 
 
-```{r plot some QQ plots}
+```{r Bootstrap Probability Distribution and QQ plots T = 31, echo=FALSE, message=FALSE}
 # sliced the data on 1 temperature unit
 # we chose 31 here since that was what the Challenger launch at
 t <- 31
@@ -408,7 +402,6 @@ sliced_df <- bootstrap_ouptuts[bootstrap_ouptuts$temp == t, ]
 
 # Draw two plots next to each other
 par(mfrow = c(1, 2))
-# normal_density <- dbinom(27, size=100, prob=0.25)
 zs <- seq(0, 1, 0.01)
 
 hist_ <- function(x, ...) {
@@ -416,17 +409,43 @@ hist_ <- function(x, ...) {
   # lines(zs, normal_density, type = "l", col = "red", lwd = 2)
 }
 
-hist_(as.numeric(sliced_df$pi.hat), main = "Gaussian Distribution", xlim = c(0, 1))
+hist_(as.numeric(sliced_df$pi.hat), main = "T = 31 Gaussian Distribution", xlim = c(0, 1))
 qqnorm(as.numeric(sliced_df$pi.hat))
 qqline(as.numeric(sliced_df$pi.hat), col = "blue", lwd = 2)
 ```
 
+```{r Bootstrap Probability Distribution and QQ plots t=53, echo=FALSE, message=FALSE}
+# sliced the data on 1 temperature unit
+# we chose 53 here due to the lowest launch reference temperature
+t <- 53
+sliced_df <- bootstrap_ouptuts[bootstrap_ouptuts$temp == t, ]
+
+# Draw two plots next to each other
+par(mfrow = c(1, 2))
+zs <- seq(0, 1, 0.01)
+
+hist_ <- function(x, ...) {
+  hist(x, breaks = 30, xlab = "Z", ylab = "", yaxt = "n", freq = FALSE, ...)
+  # lines(zs, normal_density, type = "l", col = "red", lwd = 2)
+}
+
+hist_(as.numeric(sliced_df$pi.hat), main = "T = 53 Gaussian Distribution", xlim = c(0, 1))
+qqnorm(as.numeric(sliced_df$pi.hat))
+qqline(as.numeric(sliced_df$pi.hat), col = "blue", lwd = 2)
+```
 
 To produce a confidence interval, the authors used the 0.05 and 0.95 observed quantiles from the simulated distribution as their 90% confidence interval limits.
 
 Using the parametric bootstrap, compute 90% confidence intervals separately at each integer temperature between 10° and 100° Fahrenheit.
 
 In this section, you should describe your process, justify such a process, and present your results in a way that is compelling for your reader.
+
+------
+Statistical bootstrapping is a common method use when we want to generate some statistics with reasonable confidence. Since we are not able to perform launching experiment for large N, bootstrapping allows us to simulation such a process. In this study, we performed 100-folds bootstrap of the challenger datataset so that we can obtain 100 probability of failure at each temperature ranging from $10^o$ to $100^o$ Fahrenheit. It is worth nothing here that at each iteration, we're sampling 23 observations from the original challenger dataset with replacement so that we do not have the same set of values in each iteration. After the dataset is sampled, we used the new re-sampled dataset to fit a model for the log Odd of O-ring Failure using only temperature as explanatory variable. By fitting a new model for each re-sampled dataset, we are able to obtain slightly different coefficient that would ultimately yield a slightly different prediction at each iteration. Finally, we record the probability of an O-ring failure as well as the 90% Wald confidence interval limits given an integer temperature between $10^o$ to $100^o$ Fahrenheit using each resampled model. 
+
+From the result obtained, we sliced the data on two temperatures values $31^o$ F and $53^o$ F to reference the temperature at which the Challenger spaceship launch failed and the lowest launch temperature. From the two sliced data, we generated a histogram of our 100 bootstrap sampled as well as the Q-Q plot to illustrate the predicted probability deviations versus the theoretical Gaussian distribution. Here, we are able to see that due to having literally no launches at  $31^o$ F, the failure probability distribution is sparse but shown to be aggregate at high probability region between 0.7-1.0. In contrast to  $53^o$ F, the failure probability distribution is more Gaussian-like and aggregate at low probability region between 0.0-0.4. The Q-Q plots for both temperatures values further support this by showing the predicted failure probability versus the theoretical failture probability at each quantiles. Noted that the $53^o$ F Q-Q plot shows an almost 1-1 match between the two quantiled probability while there is a clear deviation near the tail ends for the $31^o$ F Q-Q plot. 
+
+While it is safe to say that if we're able to replicate the launch measurement at each temperature values 100 more times, we'll have a better idea of the probability of failure at each temperature. Using the bootstrapping method, we're able to somewhat show the effect of launch temperature of odds of an O-ring failure. In short, the temperature at which the Challenger space craft launch at, $31^o$ F has a really high probability of O-ring failure. Delaying the launch to a warmer temperature would have helped the outcomes
 
 ## Alternative Specification (10 points)
 
