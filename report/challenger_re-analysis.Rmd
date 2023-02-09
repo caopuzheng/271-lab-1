@@ -70,8 +70,11 @@ challenger <- read_csv("../data/raw/challenger.csv")
 
 ```{r tabular EDA, echo=FALSE, message=FALSE}
 # glimpse(challenger)
-# summary(challenger)
+summary(challenger)
 # describe(challenger)
+
+print("The number of missing values in the data set")
+sum(is.na(challenger))
 ```
 
 ```{r Analysis of Response Variable, echo=FALSE, message=FALSE}
@@ -92,11 +95,11 @@ challenger %>%
 -   The authors use logistic regression to estimate the probability an O-ring will fail. In order to use this model, the authors needed to assume that each O-ring is independent for each launch. Discuss why this assumption is necessary and the potential problems with it. Note that a subsequent analysis helped to alleviate the authors' concerns about independence.
 
 ----
-The data set used in this analysis contains 5 columns, Flight, Temp, Pressure, O.ring, Number. Flight is a unique identifier reperesenting each flight observed and recored and Number represents the total number of O-ring in each spacecraft, here each spacecraft contains 6 O-rings. The O.ring variable is a random variable that denotes the number of O-ring failed at each individual launch. Lastly, Temp and Pressure are both numerica values and are the physical condition measurements taken at each launch. 
+The data set used in this analysis was obtained from the 23 pre-Challenger launches of the space shuttle. It contains 5 columns, Flight, Temp, Pressure, O.ring, Number. Flight is a unique identifier representing each flight observed and recorded. Number represents the total number of O-ring in each spacecraft, here each spacecraft contains 6 O-rings. The O.ring variable is a random variable that denotes the number of O-ring failed at each individual launch. Lastly, Temp and Pressure are both numerical values and are the physical condition measurements taken at each launch. 
 
-There are 24 launches in total and there are no missing values in any of the features in the data set. Temperature is shown to have 16 distinct values with a range between 53 to 81 and a mean of 69.57. Pressure have 3 distinct values with a range between 50 to 200 and a mean of 152. It is also worth noting that both temperature and pressure records are full integer value. In term of the response variable, number of failed O-rings, the majority of launch has 0 failed O-ring (16 out of 23). For the failed launch, there are 5 observations with 1 failed O-ring and 2 observations with 2 failed O-rings.
+There are 23 launches in the data set and there are no missing values in any of the features in the data set. Temperature is shown to have 16 distinct values with a range between 53 to 81 and a mean of 69.57. Pressure have 3 distinct values with a range between 50 to 200 and a mean of 152. It is also worth noting that both temperature and pressure records are full integer value. In term of the response variable, number of failed O-rings, the majority of launch has 0 failed O-ring (16 out of 23). For the failed launch, there are 5 observations with 1 failed O-ring and 2 observations with 2 failed O-rings.
  
-In the original research, the researchers treated each of the 6 O-rings as independent for each of the 23 launches. In other words, the failure of one O-ring do not cause any of the other O-ring to fail. This assumption is necessary because of the limited number of data. Additionally, each of the O-rings has equal probability to be affected by either temperature or pressure condition. However, when considering each O-ring as independent, the researcher might not account for a fact that a single failed O-ring cause the entire launch to fail. While careful considerations between the independence affect between each O-ring is necessary, we will continue our analysis closely follow the independence assumption.
+In the original research, the researchers treated each of the 6 O-rings as independent for each of the 23 launches. In other words, the failure of one O-ring do not cause any of the other O-ring to fail. This assumption is necessary in order to satisfy the independent assumption of using the binomial model. This binomial model also assumes that each of the O-rings has equal probability to be damaged by either temperature or pressure condition. However, when considering each O-ring as independent, the researcher might not account for a fact that a single failed O-ring could cause the other o-ring to fail and the entire launch to fail. While careful evaluation of the potential dependency between each O-ring is necessary, we will continue our analysis closely follow the independence assumption.
 
 ## Key Features
 
@@ -145,8 +148,8 @@ grid.arrange(p1, p2)
 grid.arrange(p3, p4)
 ```
 
-For our study, we noted two features, temperature and pressure, that most likely affect the odds of O-rings failure on a space shuttle.From the distribution and box plot, the number of O-rings failed has a higher distribution at the lower temperature.
-In term of pressure, the distribution plots showed that 0 failed O-rings at both high and low pressure while 2 failed O-rings showed a uniform distribution. However, it is noted that this plot does somewhat show that the number of O-rings failed is higher for higher pressure and lower for lower pressure. In the follow study, we will be using both temperature and pressure as explanatory variable to model the odd of each individual O-ring fail during the launch. Our goal is to shed some light into the inalienability of each of this feature and their statistical significant.
+From the above study, we noted two features, temperature and pressure, that most likely affect the odds of O-rings failure on a space shuttle.From the distribution and box plot, the number of O-rings failed has a higher distribution at the lower temperature.
+In term of pressure, the distribution plots showed that 0 failed O-rings at both high and low pressure while 2 failed O-rings showed a uniform distribution. However, it is noted that this plot does somewhat show that one O-rings failed has higher distribution in the higher pressure cases vs. the lower pressure cases. In the following study, we will be using both temperature and pressure as explanatory variable to model the odds of each individual O-ring fail during the launch. Our goal is to shed some light into the statistical significance of each of this feature on O-ring failure.
 
 # Analysis
 
@@ -157,22 +160,25 @@ In term of pressure, the distribution plots showed that 0 failed O-rings at both
 1.  Estimate the logistic regression model that the authors present in their report -- include the variables as linear terms in the model. Evaluate, using likelihood ratio tests, the statistical significance of each explanatory variable in the model. Evaluate, using the context and data understanding that you have created in the **Data** section of this report, the practical significance of each explanatory variable in the model.
 
 ```{r model 1 temp and pressure, echo=FALSE, message=FALSE}
-# Since there are 6 Orings on a shuttle
+# Since there are 6 O-rings on a shuttle
 # We define the failure rates as number of O Rings Failed out of 6 O Rings
 
-# create a binomial logit model on O ring failure
+# create a binomial logistic regression model to evaluate the odds of O ring failure
 mod1 <- glm(
   formula = cbind(O.ring, Number - O.ring) ~ Temp + Pressure,
   family = binomial(link = "logit"),
   data = challenger
 )
 
-# todo: add the ylabs and xlabs, rename all the columns
 stargazer(mod1,
   type = "text", omit.stat = "f",
+  covariate.labels = c("Temperature", "Pressure", "(Intercept)"),
   report = ("vc*p"),
   star.cutoffs = c(0.05, 0.01, 0.001),
-  title = "Table 1: The Estimated Relationship Between O-Rings Failure and Temperature/Pressure"
+  title = "Table 1: The Estimated Relationship Between O-Rings Failure and Temperature/Pressure",
+  dep.var.caption = "Output Variable: Log Odds of O-Rings Failure",
+  dep.var.labels = "",
+  column.sep.width = "-8pt"
 )
 ```
 
@@ -186,7 +192,7 @@ For the first model, we perform a logistic regression on the odds of O-ring fail
 
 The estimated model is $y = 2.520 - 0.98*Temp + 0.008*Pressure$. 
 
-Using a Wald test, the model return a p-value of 0.029 for temperature and 0.270 for pressure. Since the p-value for Temperature is below the 95% confident level, Temperature is statistical significant to the model. The p-value for pressure is above this level and is considered not statistically significant. Additionally, from the fitted model, we see that temperature have a coefficient of -0.098, indicating that an increase in temperature decrease the log odd of an O-ring failure. While pressure is not statistically significant, the positive coefficients suggested that an increase in pressure increase the log odd of an O-ring failure. We took this analysis a little bit further by computing the Odd Ratios for each estimated coefficients for a 10 units increase in temperature or pressure. Here, the odds of an O-ring failure is 0.374 times as likely, or about 65.3% less likely, for for a 1 unit increase in temperature. The pressure yield an Odd Ratio of 1, which indicate that an increase in pressure have the same effect on the odd of an O-ring failture as no increase in pressure.
+Using a Wald test, the model return a p-value of 0.029 for temperature and 0.270 for pressure. Since the p-value for Temperature is below the 95% confident level, Temperature is statistical significant to estimate the O-Rings failure. The p-value for pressure is above this level and is considered not statistically significant. Additionally, from the fitted model, we see that temperature have a coefficient of -0.098, indicating that an increase in temperature decrease the log odd of an O-ring failure. While pressure is not statistically significant, the positive coefficients suggested that an increase in pressure increase the log odd of an O-ring failure. These observations are aligned with what we saw from the distribution and box plot charts in our EDA analysis. We took this analysis further by computing the Odd Ratios for each estimated coefficients for a 10 units increase in temperature or pressure. Here, the odds of an O-ring failure is 0.374 times as likely, or about 63% less likely, for a 10 unit increase in temperature. The pressure yield an Odd Ratio of 1, which indicate that an increase in pressure have similar effect on the odds of an O-ring failure as no increase in pressure. 
 
 2.  Dalal, Fowlkes, and Hoadley (1989) chose to remove `pressure` from the model based on their likelihood ratio tests. Critically evaluate, using your test results and understanding of the question and data, whether `pressure` should be included in the model, or instead, `pressure` should not be included in the model. Your report needs to make a determination, argue why it is most appropriate choice, and make note of how (if at all) the model results are affected by the choice of including or excluding `pressure`.
 
@@ -194,11 +200,11 @@ Using a Wald test, the model return a p-value of 0.029 for temperature and 0.270
 Anova(mod1, test = "LR")
 ```
 
-In order to test for the significant of Pressure, we use the Likelihood Ratio Test for each explanatory variable. For this test, we stated a Null hypothesis that $\beta_2 = 0$, or Pressure does not add significant explanationary power for the odds ratio of O-ring failure, on top of the Temp in the model. 
+In order to test for the significant of Pressure, we use the Likelihood Ratio Test for each explanatory variable. For this test, we stated a Null hypothesis that $\beta_2 = 0$, or Pressure does not add significant explanatory power for the odds of O-ring failure, on top of the Temp in the model. 
 
 From the test, we obtained a p-value for a Chi-squared distribution of 0.0228 for Temperature and 0.2145 for pressure. Like the Wald test, the p-value for Pressure is above the 95% confident level, alpha=0.05, so there is not enough evidence to reject the Null hypothesis.
 
-Considering both test resutls, we conclude that Pressure provide no additional explanability to the model. Excluding it from the model is especially recommended in this case, considering the sample size of 23 observations, the drop in the degree of freedom is 5% when we add one additonal explanationaryv variable. Keeping the model simple and easy to interpret would also help with the further study. 
+Considering both test results, we conclude that Pressure does not add much explanatory power to the model. Excluding it from the model is especially recommended in this case, considering the sample size of 23 observations, the drop in the degree of freedom is 5% when we add one additional explanatory variable. AIC score also decreases with one fewer variable and lower AIC is better. Keeping the model simple and easy to interpret would also help with the further study. 
 
 ## Confidence Intervals (20 points)
 
@@ -229,12 +235,15 @@ mod3 <- glm(
   data = challenger
 )
 
-# todo: add the ylabs and xlabs, rename all the columns
 stargazer(mod2, mod3,
   type = "text", omit.stat = "f",
   report = ("vc*p"),
   star.cutoffs = c(0.05, 0.01, 0.001),
-  title = "Table 2: The Estimated Relationship Between O-Rings Failure and Temperature Effects"
+  covariate.labels = c("Temperature", "Squared Temperature", "(Intercept)"),
+  title = "Table 2: The Estimated Relationship Between O-Rings Failure and Temperature Effects",
+  dep.var.caption = "Output Variable: Log Odds of O-Rings Failure",
+  dep.var.labels = "",
+  column.sep.width = "-8pt"
 )
 ```
 
@@ -309,13 +318,10 @@ curve(
 par(new = TRUE)
 ```
 
-> Intervals are wide for temperatures less than 65F is wide and narrow for temperatures greater than 65F.
+> From the above chart, odds of O-Rings failure declines as temperature increases, as $\beta_1$ is negative. The confidence intervals are wider for temperatures lower than 50F and narrower for temperatures greater than 65F. The estimated interval for temperature equal to 30F is about (1,6); this illustrates that we have high variability for the expected number of incidents.
 
-//TODO: talk about this: seems wrong? 
-> This is expected, because most of the data have temperatures greater than 65F.
-> This is because since $\beta_1$ is negative, as 
+> The reason for wider confidence interval for lower than 50F is because the minimum temperature in the data set was 53F. The forecast error for the below-50F is larger.
 
-> The estimated interval for temperature equal to 30F is about (1,6); this illustrates that we have high variability for the expected number of incidents.
 
 3.  The temperature was 31° at launch for the Challenger in 1986. Estimate the probability of an O-ring failure using this temperature, and compute a corresponding confidence interval. Discuss what assumptions need to be made in order to apply the inference procedures.
 
@@ -340,7 +346,7 @@ result.profile_lr <- data.frame(
 )
 result.profile_lr
 ```
-
+> In order to apply the inference procedures, we assume asympotic properties of a large sample size, independence of each O-Ring failure and each failure has equal probability. At 31F, the model estimes 81.8% probability of O-Rings failure, with 95% confidence interval of 14.2% and 99%.
 
 ## Bootstrap Confidence Intervals (30 points)
 Rather than relying on asymptotic properties, consider using a parametric bootstrap, as did Dalal, Fowlkes and Hoadley.
