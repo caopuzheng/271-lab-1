@@ -71,13 +71,14 @@ challenger <- read_csv("../data/raw/challenger.csv")
 
 ```{r tabular-EDA, echo=FALSE, message=FALSE}
 # glimpse(challenger)
-summary(challenger)
-# describe(challenger)
-nulls <- sum(is.na(challenger))
-cat(nulls, "missing values in the data set.")
+#tab <- table(summary(challenger))
+#tab
+#describe(challenger)
+#nulls <- sum(is.na(challenger))
+#cat(nulls, "missing values in the data set.")
 ```
 
-```{r Analysis-of-Response-Variable, echo=FALSE, message=FALSE}
+```{r Analysis-of-Response-Variable, echo=FALSE, message=FALSE, fig.align='center', out.width="50%", fig.cap="Numer of Obserserved O-ring Failures"}
 challenger %>%
   ggplot(aes(x = O.ring, y = ..prop.., group = 1)) +
   geom_bar(fill = "DarkBlue", color = "black") +
@@ -110,14 +111,9 @@ scatter <- challenger %>%
   coord_quickmap() +
   ylab("Number Of O-rings Failed") +
   xlab("Temperature") 
-scatter
 ```
 
-<<<<<<< HEAD
-```{r Distribution Plots, echo=FALSE, message=FALSE}
-=======
-```{r echo=FALSE}
->>>>>>> bc3a0a068e3086c0665568c0321399559af72186
+```{r Distribution Plots, echo=FALSE, message=FALSE,fig.align='center', out.width="50%", fig.cap="O-ring Failure Distribution Plot for Temperature (Top) and Pressure (Bottom)"}
 p1 <- challenger %>%
   ggplot(aes(x = Temp)) +
   geom_density(aes(
@@ -139,7 +135,11 @@ p2 <- challenger %>%
   theme(plot.title = element_text(lineheight = 1, face = "bold")) +
   xlab("Pressure") +
   ylab("Density")
+grid.arrange(p1, p2)
 
+```
+
+```{r Box Plots, echo=FALSE, message=FALSE, fig.align='center', out.width="50%", fig.cap="O-ring Failure Box Plot for Temperature (Top) and Pressure (Bottom)"}
 p3 <- challenger %>%
   ggplot(aes(factor(O.ring), Temp)) +
   geom_boxplot(aes(fill = factor(O.ring))) +
@@ -158,7 +158,6 @@ p4 <- challenger %>%
   ylab("Pressure") +
   xlab("O.ring")
 
-grid.arrange(p1, p2)
 grid.arrange(p3, p4)
 ```
 
@@ -177,7 +176,7 @@ In term of pressure, the distribution plots showed that 0 failed O-rings at both
 
 Our baseline model is a binomial logistic regression model replicates what the authors present in their report. 
 
-```{r model-1-temp-and-pressure, message=FALSE}
+```{r model-1-temp-and-pressure, echo=FALSE, message=FALSE}
 # Since there are 6 O-rings on a shuttle
 # We define the failure rates as number of O Rings Failed out of 6 O Rings
 # create a binomial logistic regression model to evaluate the odds of O ring failure
@@ -188,22 +187,23 @@ mod1 <- glm(
 )
 ```
 
-```{r model-1-stargazer, echo=FALSE}
+```{r model-1-stargazer, results = "asis", echo=FALSE}
 stargazer(mod1,
-  type = "text", omit.stat = "f",
+  type = "latex", omit.stat = "f",
   covariate.labels = c("Temperature", "Pressure", "(Intercept)"),
   report = ("vc*p"),
   star.cutoffs = c(0.05, 0.01, 0.001),
-  title = "Table 1: The Estimated Relationship Between O-Rings Failure and Temperature/Pressure",
+  title = "The Estimated Relationship Between O-Rings Failure and Temperature/Pressure",
   dep.var.caption = "Output Variable: Log Odds of O-Rings Failure",
   dep.var.labels = "",
   column.sep.width = "-8pt"
 )
 ```
 
-```{r model-1-OR, message=FALSE}
+```{r model-1-OR, echo = FALSE, message=FALSE}
 # Odds ratio for model 1
 OR <- round(exp(10*mod1$coefficients), 3)[2]
+OR
 ```
 
 For the first model, we perform a logistic regression on the odds of O-ring failed response using both temperature and pressure.
@@ -247,7 +247,7 @@ Specific requirements for these plots:
 
 After defining Temperature as our explanatory variable in the previous section, an anova test determined whether a quadratic term is needed in the logistic regression model.
 
-```{r}
+```{r Estimate Logistic Regression with Temperature Effects, echo = FALSE}
 # Estimate the logistic regression model
 mod2 <- glm(
   formula = cbind(O.ring, Number - O.ring) ~ Temp,
@@ -261,26 +261,26 @@ mod3 <- glm(
 )
 ```
 
-```{r model23-stargazer, echo=FALSE}
+```{r model23-stargazer, results = "asis", echo=FALSE}
 stargazer(mod2, mod3,
-  type = "text", omit.stat = "f",
+  type = "latex", omit.stat = "f",
   report = ("vc*p"),
   star.cutoffs = c(0.05, 0.01, 0.001),
   covariate.labels = c("Temperature", "Squared Temperature", "(Intercept)"),
-  title = "Table 2: The Estimated Relationship Between O-Rings Failure and Temperature Effects",
+  title = "The Estimated Relationship Between O-Rings Failure and Temperature Effects",
   dep.var.caption = "Output Variable: Log Odds of O-Rings Failure",
   dep.var.labels = "",
   column.sep.width = "-8pt"
 )
 ```
 
-```{r Determine if quadratic term is needed}
+```{r Determine if quadratic term is needed, echo = FALSE}
 anova(mod2, mod3, test = "Chisq")
 ```
 
 The anova test yielded a p-value of 0.48, which means that there is little to no evidence that a quadratic term is statistically significant. Therefore we fail to reject the null hypothesis that `mod2` is equal to `mod3`. Therefore, we will move forward with `mod2` without the quadratic term.
 
-```{r Pi-vs-Temp-prediction-and-CI}
+```{r Pi-vs-Temp-prediction-and-CI, echo = FALSE, message = FALSE}
 mod.beta <- mod2$coefficients
 # calculate true wald confidence interval at temperature
 wald.CI.true.coverage <- function(mod, x_value) {
@@ -304,7 +304,7 @@ for (x_value in x_seq) {
 # wald.CI.true.matrix[1:5, ]
 ```
 
-```{r plot-pi-vs-temp, echo=FALSE}
+```{r plot-pi-vs-temp, echo=FALSE, fig.align='center',fig.align='center', out.width="60%", fig.cap="Temperature Effect on the Probability of O-ring Failure"}
 # Reproduce the graph overlaying the same result from the linear model as a comparison
 curve(
   expr = exp(mod.beta[1] + mod.beta[2] * x) / (1 + exp(mod.beta[1] + mod.beta[2] * x)),
@@ -331,7 +331,7 @@ for (matrix_ind in c(2, 3)) {
 ```
 
 
-```{r Graph-Expected-number-of-failures-vs-Temp, echo=FALSE}
+```{r Graph-Expected-number-of-failures-vs-Temp, echo=FALSE, fig.align='center', out.width="60%", fig.cap="Temperature Effect Expected Number of O-ring Failure"}
 curve(
   expr = 6 * exp(mod.beta[1] + mod.beta[2] * x) / (1 + exp(mod.beta[1] + mod.beta[2] * x)),
   xlim = c(31, max(challenger$Temp)),
@@ -350,7 +350,7 @@ From the above chart, odds of O-Rings failure declines as temperature increases,
 ```
 
 
-```{r Prob-at-31-degrees}
+```{r Prob-at-31-degrees, echo=FALSE, message = FALSE, align='center'}
 # Compute the Probability at T=31 degree
 params <- dim(summary(mod2)$coefficients)[1]
 predict.data <- matrix(
@@ -373,8 +373,8 @@ result.profile_lr
 To apply the inference procedures, we assume asympotic properties of a large sample size, independence of each O-Ring failure and each failure has equal probability. At 31F, the model estimes 81.8% probability of O-Rings failure, with 95% confidence interval of 14.2% and 99%.
 
 ## Bootstrap Confidence Intervals (30 points)
-
 ```{asis, echo=FALSE}
+
 Rather than relying on asymptotic properties, consider using a parametric bootstrap, as did Dalal, Fowlkes and Hoadley.
 To do this:
 
@@ -387,14 +387,9 @@ To produce a confidence interval, the authors used the 0.05 and 0.95 observed qu
 Using the parametric bootstrap, compute 90% confidence intervals separately at each integer temperature between 10° and 100° Fahrenheit.
 
 In this section, you should describe your process, justify such a process, and present your results in a way that is compelling for your reader.
-
-<<<<<<< HEAD
-```{r resample with replacement, echo = FALSE, message=FALSE}
-=======
 ```
 
-```{r resample-with-replacement, message=FALSE}
->>>>>>> bc3a0a068e3086c0665568c0321399559af72186
+```{r resample with replacement, echo = FALSE, message=FALSE}
 # TODO: create a for loop to do this,
 # for each data set:
 # for each model from the resulting data set:
@@ -452,7 +447,7 @@ agg_tbl <- bootstrap_ouptuts %>%
 ```
 
 
-```{r Bootstrap-Probability-Distribution-and-QQ-plots-T-31, echo=FALSE, message=FALSE}
+```{r Bootstrap-Probability-Distribution-and-QQ-plots-T-31, echo=FALSE, message=FALSE, fig.align='center', out.width="60%", fig.cap="Bootstrap Distribution at T=$31^o$ F"}
 # sliced the data on 1 temperature unit
 # we chose 31 here since that was what the Challenger launch at
 t <- 31
@@ -469,7 +464,7 @@ qqnorm(as.numeric(sliced_df$pi.hat))
 qqline(as.numeric(sliced_df$pi.hat), col = "blue", lwd = 2)
 ```
 
-```{r Bootstrap-Probability-Distribution-and-QQ-plots-T-53, echo=FALSE, message=FALSE}
+```{r Bootstrap-Probability-Distribution-and-QQ-plots-T-53, echo=FALSE, message=FALSE, fig.align='center', out.width="60%", fig.cap="Bootstrap Distribution at T=$53^o$ F"}
 # sliced the data on 1 temperature unit
 # we chose 53 here due to the lowest launch reference temperature
 t <- 53
@@ -486,12 +481,6 @@ qqnorm(as.numeric(sliced_df$pi.hat))
 qqline(as.numeric(sliced_df$pi.hat), col = "blue", lwd = 2)
 ```
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> bc3a0a068e3086c0665568c0321399559af72186
-------
 Statistical bootstrapping is a common method use when we want to generate some statistics with reasonable confidence. Since we are not able to perform launching experiment for large N, bootstrapping allows us to simulation such a process. In this study, we performed 100-folds bootstrap of the challenger datataset so that we can obtain 100 probability of failure at each temperature ranging from $10^o$ to $100^o$ Fahrenheit. It is worth nothing here that at each iteration, we're sampling 23 observations from the original challenger dataset with replacement so that we do not have the same set of values in each iteration. After the dataset is sampled, we used the new re-sampled dataset to fit a model for the log Odd of O-ring Failure using only temperature as explanatory variable. By fitting a new model for each re-sampled dataset, we are able to obtain slightly different coefficient that would ultimately yield a slightly different prediction at each iteration. Finally, we record the probability of an O-ring failure as well as the 90% Wald confidence interval limits given an integer temperature between $10^o$ to $100^o$ Fahrenheit using each resampled model. 
 
 From the result obtained, we sliced the data on two temperatures values $31^o$ F and $53^o$ F to reference the temperature at which the Challenger spaceship launch failed and the lowest launch temperature. From the two sliced data, we generated a histogram of our 100 bootstrap sampled as well as the Q-Q plot to illustrate the predicted probability deviations versus the theoretical Gaussian distribution. Here, we are able to see that due to having literally no launches at  $31^o$ F, the failure probability distribution is sparse but shown to be aggregate at high probability region between 0.7-1.0. In contrast to  $53^o$ F, the failure probability distribution is more Gaussian-like and aggregate at low probability region between 0.0-0.4. The Q-Q plots for both temperatures values further support this by showing the predicted failure probability versus the theoretical failure probability at each quantiles. Noted that the $53^o$ F Q-Q plot shows an almost 1-1 match between the two quantiled probability while there is a clear deviation near the tail ends for the $31^o$ F Q-Q plot. 
@@ -507,24 +496,23 @@ Would you use the linear regression model or binary logistic regression in this 
 Explain why.
 ```
 
-```{r linear model, echo=FALSE, message=FALSE}
+```{r linear model, results = "asis", echo=FALSE, message=FALSE}
 model.linear <- lm(formula = I(O.ring/Number) ~ Temp, data = challenger)
 stargazer(model.linear,
-  type = "text", omit.stat = "f",
+  type = "latex", omit.stat = "f",
   report = ("vc*p"),
   star.cutoffs = c(0.05, 0.01, 0.001),
-  title = "Table 3: Linear Effect of O-Rings Failure and Temperature"
+  title = "Linear Effect of O-Rings Failure and Temperature"
 )
 ```
 
-```{r checking linear model Homeoskedasticity, echo=FALSE, message=FALSE}
+```{r checking linear model Homeoskedasticity, echo=FALSE, message=FALSE, fig.align='center', out.width="60%", fig.cap="Linear Regression Residuals"}
 par(mfrow=c(2,2)) # init 4 charts in 1 panel
 plot(model.linear)
 ```
 Since pressure was not statistically significant, we only use temperature as an explanatory variable to a linear regression to model the probability of failure, defined as number of O-rings failed divided by the total number of O-rings. With this model, we obtained a p-value of 0.013 for temperature, which is lowered than the stated 95% Wald confidence level, or alpha 0.05 and visualized by 1 asterisk. The negative coefficient for temperature suggests that at an increase in pressure decreases the probability of failure. 
 
-While that is all well and good, performing a linear regression in this aspect is not ideal because the probability of O.ring failure can fall outside of 0 and 1. Additionally, the linear model assumes that the probability is linearly related to the explanatory variable, temperature in this case, that is not necessarily true because in the original dataset, two launches with the same temperature can have different number of O-ring failure (ex: launch 16 and launch 21). Further analysis into the linear effect model also show that it violates the homoskedasticity assumption, noted as the residual versus fitted value dipped below 0 for a brief period of time.
-For those reasons, if we wanted to model this properly, a logistic regression would have to be use.
+While that is all well and good, performing a linear regression in this aspect is not ideal because the probability of O.ring failure can fall outside of 0 and 1. Additionally, the linear model assumes that the probability is linearly related to the explanatory variable, temperature in this case, that is not necessarily true because in the original dataset, two launches with the same temperature can have different number of O-ring failure (ex: launch 16 and launch 21). Further analysis into the linear effect model also show that it violates the homoskedasticity assumption, noted as the residual versus fitted value dipped below 0 for a brief period of time. For those reasons, if we wanted to model this properly, a logistic regression would have to be use.
 
 
 # Conclusions (10 points)
@@ -534,7 +522,6 @@ Summarize this result with respect to the question(s) being asked and key takeaw
 ```
 
 ```{r}
-summary(mod2)
 OR = round(exp(coef(mod2)),4)[2]
 ```
 
