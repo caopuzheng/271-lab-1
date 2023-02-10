@@ -87,6 +87,7 @@ challenger %>%
   ylim(0, 1)
 ```
 
+
 ## Description
 
 **Complete the following task. In your final submission, please remove this question prompt so that your report reads as a report.**
@@ -102,8 +103,17 @@ There are 23 launches in the data set and there are no missing values in any of 
 In the original research, the researchers treated each of the 6 O-rings as independent for each of the 23 launches. In other words, the failure of one O-ring do not cause any of the other O-ring to fail. This assumption is necessary in order to satisfy the independent assumption of using the binomial model. This binomial model also assumes that each of the O-rings has equal probability to be damaged by either temperature or pressure condition. However, when considering each O-ring as independent, the researcher might not account for a fact that a single failed O-ring could cause the other o-ring to fail and the entire launch to fail. While careful evaluation of the potential dependency between each O-ring is necessary, we will continue our analysis closely follow the independence assumption.
 
 ## Key Features
+```{r Scatterplot of O-Rings, echo=FALSE, message=FALSE}
+scatter <- challenger %>%
+  ggplot(aes(x = Temp, y = O.ring)) +
+  geom_point() +
+  coord_quickmap() +
+  ylab("Number Of O-rings Failed") +
+  xlab("Temperature") 
+scatter
+```
 
-```{r}
+```{r Distribution Plots, echo=FALSE, message=FALSE}
 p1 <- challenger %>%
   ggplot(aes(x = Temp)) +
   geom_density(aes(
@@ -356,6 +366,12 @@ To do this:
 2.  Estimate a model for each dataset.
 3.  Compute the effect at a specific temperature of interest.
 
+To produce a confidence interval, the authors used the 0.05 and 0.95 observed quantiles from the simulated distribution as their 90% confidence interval limits.
+
+Using the parametric bootstrap, compute 90% confidence intervals separately at each integer temperature between 10° and 100° Fahrenheit.
+
+In this section, you should describe your process, justify such a process, and present your results in a way that is compelling for your reader.
+
 ```{r resample with replacement, echo = FALSE, message=FALSE}
 # TODO: create a for loop to do this,
 # for each data set:
@@ -461,12 +477,6 @@ qqnorm(as.numeric(sliced_df$pi.hat))
 qqline(as.numeric(sliced_df$pi.hat), col = "blue", lwd = 2)
 ```
 
-To produce a confidence interval, the authors used the 0.05 and 0.95 observed quantiles from the simulated distribution as their 90% confidence interval limits.
-
-Using the parametric bootstrap, compute 90% confidence intervals separately at each integer temperature between 10° and 100° Fahrenheit.
-
-In this section, you should describe your process, justify such a process, and present your results in a way that is compelling for your reader.
-
 ------
 Statistical bootstrapping is a common method use when we want to generate some statistics with reasonable confidence. Since we are not able to perform launching experiment for large N, bootstrapping allows us to simulation such a process. In this study, we performed 100-folds bootstrap of the challenger datataset so that we can obtain 100 probability of failure at each temperature ranging from $10^o$ to $100^o$ Fahrenheit. It is worth nothing here that at each iteration, we're sampling 23 observations from the original challenger dataset with replacement so that we do not have the same set of values in each iteration. After the dataset is sampled, we used the new re-sampled dataset to fit a model for the log Odd of O-ring Failure using only temperature as explanatory variable. By fitting a new model for each re-sampled dataset, we are able to obtain slightly different coefficient that would ultimately yield a slightly different prediction at each iteration. Finally, we record the probability of an O-ring failure as well as the 90% Wald confidence interval limits given an integer temperature between $10^o$ to $100^o$ Fahrenheit using each resampled model. 
 
@@ -481,7 +491,7 @@ Explain the model results; conduct model diagnostic; and assess the validity of 
 Would you use the linear regression model or binary logistic regression in this case?
 Explain why.
 
-```{r}
+```{r linear model, echo=FALSE, message=FALSE}
 model.linear <- lm(formula = I(O.ring/Number) ~ Temp, data = challenger)
 stargazer(model.linear,
   type = "text", omit.stat = "f",
@@ -491,9 +501,14 @@ stargazer(model.linear,
 )
 ```
 
+```{r checking linear model Homeoskedasticity, echo=FALSE, message=FALSE}
+par(mfrow=c(2,2)) # init 4 charts in 1 panel
+plot(model.linear)
+```
 Since pressure was not statistically significant, we only use temperature as an explanatory variable to a linear regression to model the probability of failure, defined as number of O-rings failed divided by the total number of O-rings. With this model, we obtained a p-value of 0.013 for temperature, which is lowered than the stated 95% Wald confidence level, or alpha 0.05 and visualized by 1 asterisk. The negative coefficient for temperature suggests that at an increase in pressure decreases the probability of failure. 
 
-While that is all well and good, performing a linear regression in this aspect violates the model identically independent distribution assumption. The given dataset has the response variable O.ring as an integer count from O to 6. And the original research treated each O.ring as an independent observation. Thus, by simply dividing O.ring by the maximum number of O.ring and performing a linear regression, we are sometime bundling more than one failled O-rings together in one observation. In this case, if we wanted to model this properly based on the i.i.d. assumptions, a logistic regression would have to be use.
+While that is all well and good, performing a linear regression in this aspect is not ideal because the probability of O.ring failure can fall outside of 0 and 1. Additionally, the linear model assumes that the probability is linearly related to the explanatory variable, temperature in this case, that is not necessarily true because in the original dataset, two launches with the same temperature can have different number of O-ring failure (ex: launch 16 and launch 21). Further analysis into the linear effect model also show that it violates the homoskedasticity assumption, noted as the residual versus fitted value dipped below 0 for a brief period of time.
+For those reasons, if we wanted to model this properly, a logistic regression would have to be use.
 
 
 # Conclusions (10 points)
