@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021) (preloaded format=pdflatex 2023.2.10)  10 FEB 2023 21:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021) (preloaded format=pdflatex 2023.2.11)  11 FEB 2023 02:39
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -521,105 +521,105 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 
 {/opt/texlive/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 1
-55.
+52.
 (/usr/local/texlive/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 <challenger_re-analysis_files/figure-latex/Analysis-of-Response-Variable-1.pdf,
- id=70, 459.7175pt x 316.18124pt>
+ id=75, 459.7175pt x 316.18124pt>
 File: challenger_re-analysis_files/figure-latex/Analysis-of-Response-Variable-1
 .pdf Graphic file (type pdf)
 <use challenger_re-analysis_files/figure-latex/Analysis-of-Response-Variable-1.
 pdf>
 Package pdftex.def Info: challenger_re-analysis_files/figure-latex/Analysis-of-
-Response-Variable-1.pdf  used on input line 162.
+Response-Variable-1.pdf  used on input line 159.
 (pdftex.def)             Requested size: 234.8807pt x 161.54459pt.
 [2 <./challenger_re-analysis_files/figure-latex/Analysis-of-Response-Variable-1
 .pdf>]
-<challenger_re-analysis_files/figure-latex/Distribution Plots-1.pdf, id=88, 453
+<challenger_re-analysis_files/figure-latex/Distribution Plots-1.pdf, id=93, 453
 .695pt x 313.17pt>
 File: challenger_re-analysis_files/figure-latex/Distribution Plots-1.pdf Graphi
 c file (type pdf)
 <use challenger_re-analysis_files/figure-latex/Distribution Plots-1.pdf>
 Package pdftex.def Info: challenger_re-analysis_files/figure-latex/Distribution
- Plots-1.pdf  used on input line 183.
+ Plots-1.pdf  used on input line 180.
 (pdftex.def)             Requested size: 234.87741pt x 162.12776pt.
-<challenger_re-analysis_files/figure-latex/Box Plots-1.pdf, id=89, 453.695pt x 
-313.17pt>
+<challenger_re-analysis_files/figure-latex/Box Plots-1.pdf, id=94, 464.73625pt 
+x 315.1775pt>
 File: challenger_re-analysis_files/figure-latex/Box Plots-1.pdf Graphic file (t
 ype pdf)
 <use challenger_re-analysis_files/figure-latex/Box Plots-1.pdf>
 Package pdftex.def Info: challenger_re-analysis_files/figure-latex/Box Plots-1.
-pdf  used on input line 192.
-(pdftex.def)             Requested size: 234.87741pt x 162.12776pt.
+pdf  used on input line 189.
+(pdftex.def)             Requested size: 234.87787pt x 159.29082pt.
 [3 <./challenger_re-analysis_files/figure-latex/Distribution Plots-1.pdf> <./ch
-allenger_re-analysis_files/figure-latex/Box Plots-1.pdf>] [4]
-<challenger_re-analysis_files/figure-latex/plot-pi-vs-temp-1.pdf, id=128, 434.6
+allenger_re-analysis_files/figure-latex/Box Plots-1.pdf>] [4] [5]
+<challenger_re-analysis_files/figure-latex/plot-pi-vs-temp-1.pdf, id=140, 434.6
 2375pt x 297.11pt>
 File: challenger_re-analysis_files/figure-latex/plot-pi-vs-temp-1.pdf Graphic f
 ile (type pdf)
 <use challenger_re-analysis_files/figure-latex/plot-pi-vs-temp-1.pdf>
 Package pdftex.def Info: challenger_re-analysis_files/figure-latex/plot-pi-vs-t
-emp-1.pdf  used on input line 329.
+emp-1.pdf  used on input line 327.
 (pdftex.def)             Requested size: 281.87206pt x 192.68852pt.
 <challenger_re-analysis_files/figure-latex/Graph-Expected-number-of-failures-vs
--Temp-1.pdf, id=129, 440.64626pt x 298.11375pt>
+-Temp-1.pdf, id=141, 440.64626pt x 298.11375pt>
 File: challenger_re-analysis_files/figure-latex/Graph-Expected-number-of-failur
 es-vs-Temp-1.pdf Graphic file (type pdf)
 <use challenger_re-analysis_files/figure-latex/Graph-Expected-number-of-failure
 s-vs-Temp-1.pdf>
 Package pdftex.def Info: challenger_re-analysis_files/figure-latex/Graph-Expect
-ed-number-of-failures-vs-Temp-1.pdf  used on input line 338.
+ed-number-of-failures-vs-Temp-1.pdf  used on input line 336.
 (pdftex.def)             Requested size: 281.86472pt x 190.69206pt.
-[5] [6 <./challenger_re-analysis_files/figure-latex/plot-pi-vs-temp-1.pdf>]
 <challenger_re-analysis_files/figure-latex/Bootstrap-Probability-Distribution-a
-nd-QQ-plots-T-31-1.pdf, id=152, 403.5075pt x 286.06876pt>
+nd-QQ-plots-T-31-1.pdf, id=142, 403.5075pt x 286.06876pt>
 File: challenger_re-analysis_files/figure-latex/Bootstrap-Probability-Distribut
 ion-and-QQ-plots-T-31-1.pdf Graphic file (type pdf)
 <use challenger_re-analysis_files/figure-latex/Bootstrap-Probability-Distributi
 on-and-QQ-plots-T-31-1.pdf>
 Package pdftex.def Info: challenger_re-analysis_files/figure-latex/Bootstrap-Pr
-obability-Distribution-and-QQ-plots-T-31-1.pdf  used on input line 359.
+obability-Distribution-and-QQ-plots-T-31-1.pdf  used on input line 357.
 (pdftex.def)             Requested size: 281.8561pt x 199.82335pt.
 <challenger_re-analysis_files/figure-latex/Bootstrap-Probability-Distribution-a
-nd-QQ-plots-T-53-1.pdf, id=153, 403.5075pt x 286.06876pt>
+nd-QQ-plots-T-53-1.pdf, id=143, 403.5075pt x 286.06876pt>
 File: challenger_re-analysis_files/figure-latex/Bootstrap-Probability-Distribut
 ion-and-QQ-plots-T-53-1.pdf Graphic file (type pdf)
 <use challenger_re-analysis_files/figure-latex/Bootstrap-Probability-Distributi
 on-and-QQ-plots-T-53-1.pdf>
 Package pdftex.def Info: challenger_re-analysis_files/figure-latex/Bootstrap-Pr
-obability-Distribution-and-QQ-plots-T-53-1.pdf  used on input line 368.
+obability-Distribution-and-QQ-plots-T-53-1.pdf  used on input line 366.
 (pdftex.def)             Requested size: 281.8561pt x 199.82335pt.
-[7 <./challenger_re-analysis_files/figure-latex/Graph-Expected-number-of-failur
-es-vs-Temp-1.pdf>] [8 <./challenger_re-analysis_files/figure-latex/Bootstrap-Pr
-obability-Distribution-and-QQ-plots-T-31-1.pdf> <./challenger_re-analysis_files
-/figure-latex/Bootstrap-Probability-Distribution-and-QQ-plots-T-53-1.pdf>]
+[6 <./challenger_re-analysis_files/figure-latex/plot-pi-vs-temp-1.pdf>] [7 <./c
+hallenger_re-analysis_files/figure-latex/Graph-Expected-number-of-failures-vs-T
+emp-1.pdf> <./challenger_re-analysis_files/figure-latex/Bootstrap-Probability-D
+istribution-and-QQ-plots-T-31-1.pdf>] [8 <./challenger_re-analysis_files/figure
+-latex/Bootstrap-Probability-Distribution-and-QQ-plots-T-53-1.pdf>]
 <challenger_re-analysis_files/figure-latex/checking linear model Homeoskedastic
-ity-1.pdf, id=192, 457.71pt x 289.08pt>
+ity-1.pdf, id=197, 457.71pt x 289.08pt>
 File: challenger_re-analysis_files/figure-latex/checking linear model Homeosked
 asticity-1.pdf Graphic file (type pdf)
 <use challenger_re-analysis_files/figure-latex/checking linear model Homeoskeda
 sticity-1.pdf>
 Package pdftex.def Info: challenger_re-analysis_files/figure-latex/checking lin
-ear model Homeoskedasticity-1.pdf  used on input line 416.
+ear model Homeoskedasticity-1.pdf  used on input line 390.
 (pdftex.def)             Requested size: 281.86363pt x 178.01912pt.
-[9] [10 <./challenger_re-analysis_files/figure-latex/checking linear model Home
-oskedasticity-1.pdf>] (./challenger_re-analysis.aux)
+[9 <./challenger_re-analysis_files/figure-latex/checking linear model Homeosked
+asticity-1.pdf>] [10] [11] (./challenger_re-analysis.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
 Package rerunfilecheck Info: File `challenger_re-analysis.out' has not changed.
 
-(rerunfilecheck)             Checksum: E714271AC99BEA3A3F5C57012591C9A2;1924.
+(rerunfilecheck)             Checksum: 21A2F004F4C61939C6B5EAB1A95D2F88;2008.
  ) 
 Here is how much of TeX's memory you used:
- 12086 strings out of 480236
- 190386 string characters out of 5895861
- 483256 words of memory out of 5000000
- 29794 multiletter control sequences out of 15000+600000
- 517393 words of font info for 61 fonts, out of 8000000 for 9000
+ 12094 strings out of 480236
+ 190472 string characters out of 5895861
+ 480288 words of memory out of 5000000
+ 29798 multiletter control sequences out of 15000+600000
+ 517712 words of font info for 62 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 60i,10n,63p,1297b,331s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 60i,10n,63p,1297b,362s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{/usr/local/t
 exlive/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}{/usr/local/texlive/texmf-dist/f
 onts/enc/dvips/lm/lm-ec.enc}{/usr/local/texlive/texmf-dist/fonts/enc/dvips/lm/l
@@ -632,11 +632,12 @@ c/lm/lmr10.pfb></usr/local/texlive/texmf-dist/fonts/type1/public/lm/lmr12.pfb><
 ve/texmf-dist/fonts/type1/public/lm/lmr8.pfb></usr/local/texlive/texmf-dist/fon
 ts/type1/public/lm/lmri10.pfb></usr/local/texlive/texmf-dist/fonts/type1/public
 /lm/lmsy10.pfb></usr/local/texlive/texmf-dist/fonts/type1/public/lm/lmsy8.pfb><
-/usr/local/texlive/texmf-dist/fonts/type1/public/lm/lmtt10.pfb>
-Output written on challenger_re-analysis.pdf (10 pages, 328111 bytes).
+/usr/local/texlive/texmf-dist/fonts/type1/public/lm/lmtt10.pfb></usr/local/texl
+ive/texmf-dist/fonts/type1/public/lm/lmtti10.pfb>
+Output written on challenger_re-analysis.pdf (11 pages, 346629 bytes).
 PDF statistics:
- 283 PDF objects out of 1000 (max. 8388607)
- 219 compressed objects within 3 object streams
- 45 named destinations out of 1000 (max. 500000)
- 129 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 298 PDF objects out of 1000 (max. 8388607)
+ 231 compressed objects within 3 object streams
+ 48 named destinations out of 1000 (max. 500000)
+ 137 words of extra memory for PDF output out of 10000 (max. 10000000)
 

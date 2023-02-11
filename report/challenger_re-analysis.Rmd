@@ -11,7 +11,6 @@ geometry: margin=1in
 
 ```{=tex}
 \begin{abstract} 
-This report will, indeed, be abstract. No, instead, describe your goals your approach, and what you learn.
 In this study, we are investigating the effect of physical condition such as temperature and pressure have on the odds of O Rings failure on a space shuttle. 
 \end{abstract}
 ```
@@ -20,8 +19,6 @@ In this study, we are investigating the effect of physical condition such as tem
 ## Research question
 
 How do temperature and pressure affect the odds of o-ring failures on a shuttle launch?
-
-Do physical conditions, in term of temperature and pressure, affect the odds of O-Rings failures on a shuttle?
 
 # Data (20 points)
 
@@ -37,18 +34,16 @@ Do physical conditions, in term of temperature and pressure, affect the odds of 
 ```
 
 ```{r load packages for homework 2, echo=FALSE, message=FALSE}
-# install.packages("MASS")
-# install.packages("ggplot2")
-# install.packages("sandwich")
-# install.packages("stargazer")
-# install.packages("mcprofile")
-# install.packages("Hmisc")
-# install.packages("patchwork")
-# install.packages("car")
+ # install.packages("MASS")
+ # install.packages("ggplot2")
+ # install.packages("sandwich")
+ # install.packages("stargazer")
+ # install.packages("mcprofile")
+ # install.packages("Hmisc")
+ # install.packages("patchwork")
+ # install.packages("car")
 library(tidyverse)
 library(patchwork)
-library(gridExtra)
-library(Hmisc)
 # multinomial regression
 library(nnet)
 # car pacakge for testing
@@ -71,14 +66,13 @@ challenger <- read_csv("../data/raw/challenger.csv")
 
 ```{r tabular-EDA, echo=FALSE, message=FALSE}
 # glimpse(challenger)
-# tab <- table(summary(challenger))
-# tab
+# summary(challenger)
 # describe(challenger)
 # nulls <- sum(is.na(challenger))
 # cat(nulls, "missing values in the data set.")
 ```
 
-```{r Analysis-of-Response-Variable, echo=FALSE, message=FALSE, fig.align='center', out.width="50%", fig.cap="Numer of Obserserved O-ring Failures"}
+```{r Analysis-of-Response-Variable, echo=FALSE, message=FALSE, fig.align='center', out.width="50%", fig.cap="Number of Observed O-ring Failures"}
 challenger %>%
   ggplot(aes(x = O.ring, y = ..prop.., group = 1)) +
   geom_bar(fill = "DarkBlue", color = "black") +
@@ -97,21 +91,13 @@ challenger %>%
 -   The authors use logistic regression to estimate the probability an O-ring will fail. In order to use this model, the authors needed to assume that each O-ring is independent for each launch. Discuss why this assumption is necessary and the potential problems with it. Note that a subsequent analysis helped to alleviate the authors' concerns about independence.
 ```
 
-The data for this analysis is from the 23 pre-Challenger launches of the space shuttle. It contains 5 columns: Flight, Temp, Pressure, O.ring, Number. Flight is a unique identifier representing each flight observed. Number represents the total number of O-rings in each spacecraft (6 for each spacecraft). O.ring is a random variable that denotes the number of O-rings failed at each launch. Lastly, Temp and Pressure are numerical values for the physical condition measurements taken at each launch. 
+The data for this analysis is from the 23 space shuttle launches before the Challenger space shuttle. It contains 5 columns: Flight, Temp, Pressure, O.ring, Number. Flight is a unique identifier representing each flight observed. Number represents the total number of O-rings in each spacecraft (6 for each spacecraft). O.ring is a random variable that denotes the number of O-rings failed at each launch. Lastly, Temp and Pressure are numerical values for the physical condition measurements taken at each launch. 
 
 There are 23 launches in the data and no missing values in any of the features in the data set. Temperature has 16 distinct values with a range between 53 to 81 and a mean of 69.57. Pressure has 3 distinct values with a range between 50 to 200 and a mean of 152. Both temperature and pressure records are full integer value. In terms of the response variable, number of failed O-rings, the majority of flights have 0 failed O-ring (16 out of 23). For the failed launch, there are 5 observations with 1 failed O-ring and 2 observations with 2 failed O-rings.
  
 In the original study, the researchers treated each of the 6 O-rings as independent for each of the 23 launches. In other words, the failure of one O-ring do not cause any of the other O-ring to fail. This assumption is necessary to satisfy the binomial model's assumption of independence. The binomial model also assumes that each of the O-rings has equal probability to be damaged by either temperature or pressure. But when considering each O-ring as independent, the researcher might not account for the fact that a single failed O-ring could cause the other o-ring to fail and the entire launch to fail. While careful evaluation of the potential dependency between each O-ring is necessary, we will continue our analysis follow the independence assumption.
 
 ## Key Features
-```{r Scatterplot of O-Rings, echo=FALSE, message=FALSE}
-scatter <- challenger %>%
-  ggplot(aes(x = Temp, y = O.ring)) +
-  geom_point() +
-  coord_quickmap() +
-  ylab("Number Of O-rings Failed") +
-  xlab("Temperature")
-```
 
 ```{r Distribution Plots, echo=FALSE, message=FALSE,fig.align='center', out.width="50%", fig.cap="O-ring Failure Distribution Plot for Temperature (Top) and Pressure (Bottom)"}
 p1 <- challenger %>%
@@ -157,7 +143,7 @@ p4 <- challenger %>%
   ylab("Pressure") +
   xlab("O.ring")
 
-grid.arrange(p3, p4)
+grid.arrange(p3, p4, nrow=1, ncol=2)
 ```
 
 From the above study, we noted two features, temperature and pressure, that most likely affect the odds of O-rings failure on a space shuttle.From the distribution and box plot, the number of O-rings failed has a higher distribution at the lower temperature.
@@ -175,10 +161,7 @@ In term of pressure, the distribution plots showed that 0 failed O-rings at both
 
 Our baseline model is a binomial logistic regression model replicates what the authors present in their report. 
 
-```{r model-1-temp-and-pressure, echo=FALSE, message=FALSE}
-# Since there are 6 O-rings on a shuttle
-# We define the failure rates as number of O Rings Failed out of 6 O Rings
-# create a binomial logistic regression model to evaluate the odds of O ring failure
+```{r model-1-temp-and-pressure, message=FALSE}
 mod1 <- glm(
   formula = cbind(O.ring, Number - O.ring) ~ Temp + Pressure,
   family = binomial(link = "logit"),
@@ -186,9 +169,9 @@ mod1 <- glm(
 )
 ```
 
-```{r model-1-stargazer, results = "asis", echo=FALSE}
+```{r model-1-stargazer, results = "asis",  message = FALSE, echo=FALSE}
 stargazer(mod1,
-  type = "latex", omit.stat = "f",
+  type = "latex", omit.stat=c("f", "ser"),
   covariate.labels = c("Temperature", "Pressure", "(Intercept)"),
   report = ("vc*p"),
   star.cutoffs = c(0.05, 0.01, 0.001),
@@ -199,17 +182,16 @@ stargazer(mod1,
 )
 ```
 
-```{r model-1-OR, echo = FALSE, message=FALSE}
+```{r model-1-OR}
 # Odds ratio for model 1
-OR <- round(exp(10 * mod1$coefficients), 3)[2]
-OR
+OR1 <- round(exp(10 * mod1$coefficients), 3)[2]
 ```
 
 For the first model, we perform a logistic regression on the odds of O-ring failed response using both temperature and pressure.
 
 The estimated model is $y = 2.520 - 0.98*Temp + 0.008*Pressure$. 
 
-Using a Wald test, the model return a p-value of 0.029 for temperature and 0.270 for pressure. Since the p-value for Temperature is below the 95% confident level, Temperature is statistical significant to estimate the O-Rings failure. The p-value for pressure is above this level and is considered not statistically significant. Additionally, from the fitted model, we see that temperature have a coefficient of -0.098, indicating that an increase in temperature decrease the log odd of an O-ring failure. While pressure is not statistically significant, the positive coefficients suggested that an increase in pressure increase the log odd of an O-ring failure. These observations are aligned with what we saw from the distribution and box plot charts in our EDA analysis. We took this analysis further by computing the Odd Ratios for each estimated coefficients for a 10 units increase in temperature or pressure. Here, the odds of an O-ring failure is `r OR` times as likely, or about 63% less likely, for a 10 unit increase in temperature. The pressure yield an Odd Ratio of 1, which indicate that an increase in pressure have similar effect on the odds of an O-ring failure as no increase in pressure. 
+Using a Wald test, the model return a p-value of 0.029 for temperature and 0.270 for pressure. Since the p-value for Temperature is below the 95% confident level, Temperature is statistical significant to estimate the O-Rings failure. The p-value for pressure is above this level and is considered not statistically significant. Additionally, from the fitted model, we see that temperature have a coefficient of -0.098, indicating that an increase in temperature decrease the log odd of an O-ring failure. While pressure is not statistically significant, the positive coefficients suggested that an increase in pressure increase the log odd of an O-ring failure. These observations are aligned with what we saw from the distribution and box plot charts in our EDA analysis. We took this analysis further by computing the Odd Ratios for each estimated coefficients for a 10 units increase in temperature or pressure. Here, the odds of an O-ring failure is `r OR1` times as likely, or about 63% less likely, for a 10 unit increase in temperature. The pressure yield an Odd Ratio of 1, which indicate that an increase in pressure have similar effect on the odds of an O-ring failure as no increase in pressure. 
 
 ```{asis, echo=FALSE}
 2.  Dalal, Fowlkes, and Hoadley (1989) chose to remove `pressure` from the model based on their likelihood ratio tests. Critically evaluate, using your test results and understanding of the question and data, whether `pressure` should be included in the model, or instead, `pressure` should not be included in the model. Your report needs to make a determination, argue why it is most appropriate choice, and make note of how (if at all) the model results are affected by the choice of including or excluding `pressure`.
@@ -246,7 +228,7 @@ Specific requirements for these plots:
 
 After defining Temperature as our explanatory variable in the previous section, an anova test determined whether a quadratic term is needed in the logistic regression model.
 
-```{r Estimate Logistic Regression with Temperature Effects, echo = FALSE}
+```{r Estimate Logistic Regression with Temperature Effects}
 # Estimate the logistic regression model
 mod2 <- glm(
   formula = cbind(O.ring, Number - O.ring) ~ Temp,
@@ -260,20 +242,7 @@ mod3 <- glm(
 )
 ```
 
-```{r model23-stargazer, results = "asis", echo=FALSE}
-stargazer(mod2, mod3,
-  type = "latex", omit.stat = "f",
-  report = ("vc*p"),
-  star.cutoffs = c(0.05, 0.01, 0.001),
-  covariate.labels = c("Temperature", "Squared Temperature", "(Intercept)"),
-  title = "The Estimated Relationship Between O-Rings Failure and Temperature Effects",
-  dep.var.caption = "Output Variable: Log Odds of O-Rings Failure",
-  dep.var.labels = "",
-  column.sep.width = "-8pt"
-)
-```
-
-```{r Determine if quadratic term is needed, echo = FALSE}
+```{r Determine if quadratic term is needed}
 anova(mod2, mod3, test = "Chisq")
 ```
 
@@ -369,7 +338,7 @@ result.profile_lr <- data.frame(
 result.profile_lr
 ```
 
-To apply the inference procedures, we assume asympotic properties of a large sample size, independence of each O-Ring failure and each failure has equal probability. At 31F, the model estimes 81.8% probability of O-Rings failure, with 95% confidence interval of 14.2% and 99%.
+To apply the inference procedures, we assume asympotic properties of a large sample size, independence of each O-Ring failure and each failure has equal probability. At 31F, the model estimates 81.8% probability of O-Rings failure, with 95% confidence interval of 14.2% and 99%.
 
 ## Bootstrap Confidence Intervals (30 points)
 ```{asis, echo=FALSE}
@@ -494,15 +463,8 @@ Explain the model results; conduct model diagnostic; and assess the validity of 
 Would you use the linear regression model or binary logistic regression in this case?
 Explain why.
 ```
-
-```{r linear model, results = "asis", echo=FALSE, message=FALSE}
+```{r linear model fit}
 model.linear <- lm(formula = I(O.ring / Number) ~ Temp, data = challenger)
-stargazer(model.linear,
-  type = "latex", omit.stat = "f",
-  report = ("vc*p"),
-  star.cutoffs = c(0.05, 0.01, 0.001),
-  title = "Linear Effect of O-Rings Failure and Temperature"
-)
 ```
 
 ```{r checking linear model Homeoskedasticity, echo=FALSE, message=FALSE, fig.align='center', out.width="60%", fig.cap="Linear Regression Residuals"}
@@ -530,5 +492,25 @@ In conclusion, our final model is a binomial logistic regression model with o-ri
 Our explanatory variable analysis involved anova tests comparing models with combinations of Temperature, Pressure, and Temperature-squared. The results demonstrate that Model 3, with Temperature as the only explanatory variable for O.Ring failure, is the most statistically significant model. In this model, the probability of o-ring failure decreases as temperature increases, and the confidence interval also dramatically decreases when the temperature is greater than 65 degrees compared to less than 65 degrees. This observation is reinforced through parametric bootstrapping. With 100 iterations of bootstrapping and 23 observations per iteration, the results showed that at the lowest temperature of 31F, the failure probability distribution is sparse but aggregates at a high probability region between 0.7 and 1.0 while at 53F, the failure probability distribution is Gaussian-like and aggregates at a low probability region between 0.0 and 0.4. Therefore, delaying the launch to a warmer temperature decreases the likelihood of o-ring failure. Finally, we considered a linear regression model as an alternative specifications against the binomial model, but doing so would violate the assumption of an identically independent distribution. 
 
 
+# Appendix
+```{r model23-stargazer, results = "asis", echo=FALSE}
+stargazer(mod2, mod3,
+  type = "latex", omit.stat = "f",
+  report = ("vc*p"),
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  covariate.labels = c("Temperature", "Squared Temperature", "(Intercept)"),
+  title = "The Estimated Relationship Between O-Rings Failure and Temperature Effects",
+  dep.var.caption = "Output Variable: Log Odds of O-Rings Failure",
+  dep.var.labels = "",
+  column.sep.width = "-8pt"
+)
+```
 
-
+```{r linear model, results = "asis", echo=FALSE, message=FALSE}
+stargazer(model.linear,
+  type = "latex", omit.stat = "f",
+  report = ("vc*p"),
+  star.cutoffs = c(0.05, 0.01, 0.001),
+  title = "Linear Effect of O-Rings Failure and Temperature"
+)
+```
