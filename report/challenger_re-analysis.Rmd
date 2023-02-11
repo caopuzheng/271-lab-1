@@ -483,34 +483,10 @@ Summarize this result with respect to the question(s) being asked and key takeaw
 ```
 
 ```{r}
-OR <- round(exp(coef(mod2)), 4)[2]
+OR <- round(exp(10*coef(mod2)), 4)[2]
 ```
 
 
-In conclusion, our final model is a binomial logistic regression model with o-ring success as the dependent variable and temperature as the explanatory variable. The table above is the odds ratio of having a 1 unit increase from that corresponding temperature. For example, the odds of an o-ring failing increases by `r OR` times for every 1-unit increase in temperature. 
+In conclusion, our final model is a binomial logistic regression model with o-ring success as the dependent variable and temperature as the explanatory variable. The table above is the odds ratio of having a 10 units increase from that corresponding temperature. For example, the odds of an o-ring failing increases by `r OR` times for every 10-unit increase in temperature. 
 
-Our explanatory variable analysis involved anova tests comparing models with combinations of Temperature, Pressure, and Temperature-squared. The results demonstrate that Model 3, with Temperature as the only explanatory variable for O.Ring failure, is the most statistically significant model. In this model, the probability of o-ring failure decreases as temperature increases, and the confidence interval also dramatically decreases when the temperature is greater than 65 degrees compared to less than 65 degrees. This observation is reinforced through parametric bootstrapping. With 100 iterations of bootstrapping and 23 observations per iteration, the results showed that at the lowest temperature of 31F, the failure probability distribution is sparse but aggregates at a high probability region between 0.7 and 1.0 while at 53F, the failure probability distribution is Gaussian-like and aggregates at a low probability region between 0.0 and 0.4. Therefore, delaying the launch to a warmer temperature decreases the likelihood of o-ring failure. Finally, we considered a linear regression model as an alternative specifications against the binomial model, but doing so would violate the assumption of an identically independent distribution. 
-
-
-# Appendix
-```{r model23-stargazer, results = "asis", echo=FALSE}
-stargazer(mod2, mod3,
-  type = "latex", omit.stat = "f",
-  report = ("vc*p"),
-  star.cutoffs = c(0.05, 0.01, 0.001),
-  covariate.labels = c("Temperature", "Squared Temperature", "(Intercept)"),
-  title = "The Estimated Relationship Between O-Rings Failure and Temperature Effects",
-  dep.var.caption = "Output Variable: Log Odds of O-Rings Failure",
-  dep.var.labels = "",
-  column.sep.width = "-8pt"
-)
-```
-
-```{r linear model, results = "asis", echo=FALSE, message=FALSE}
-stargazer(model.linear,
-  type = "latex", omit.stat = "f",
-  report = ("vc*p"),
-  star.cutoffs = c(0.05, 0.01, 0.001),
-  title = "Linear Effect of O-Rings Failure and Temperature"
-)
-```
+Our explanatory variable analysis involved anova tests comparing models with combinations of Temperature, Pressure, and Temperature-squared. The results demonstrate that Model 2, with Temperature as the only explanatory variable for O.Ring failure, is the most statistically significant model. In this model, the probability of o-ring failure decreases as temperature increases, and the confidence interval also dramatically decreases when the temperature is greater than 65 degrees compared to less than 65 degrees. This observation is reinforced through parametric bootstrapping. With 100 iterations of bootstrapping and 23 observations per iteration, the results showed that at the lowest temperature of 31F, the failure probability distribution is sparse but aggregates at a high probability region between 0.7 and 1.0 while at 53F, the failure probability distribution is Gaussian-like and aggregates at a low probability region between 0.0 and 0.4. Therefore, delaying the launch to a warmer temperature decreases the likelihood of o-ring failure. Finally, we considered a linear regression model as an alternative specifications against the binomial model, but doing so would violate the assumption* TODO. 
