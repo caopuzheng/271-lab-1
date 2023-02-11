@@ -71,11 +71,11 @@ challenger <- read_csv("../data/raw/challenger.csv")
 
 ```{r tabular-EDA, echo=FALSE, message=FALSE}
 # glimpse(challenger)
-#tab <- table(summary(challenger))
-#tab
-#describe(challenger)
-#nulls <- sum(is.na(challenger))
-#cat(nulls, "missing values in the data set.")
+# tab <- table(summary(challenger))
+# tab
+# describe(challenger)
+# nulls <- sum(is.na(challenger))
+# cat(nulls, "missing values in the data set.")
 ```
 
 ```{r Analysis-of-Response-Variable, echo=FALSE, message=FALSE, fig.align='center', out.width="50%", fig.cap="Numer of Obserserved O-ring Failures"}
@@ -110,7 +110,7 @@ scatter <- challenger %>%
   geom_point() +
   coord_quickmap() +
   ylab("Number Of O-rings Failed") +
-  xlab("Temperature") 
+  xlab("Temperature")
 ```
 
 ```{r Distribution Plots, echo=FALSE, message=FALSE,fig.align='center', out.width="50%", fig.cap="O-ring Failure Distribution Plot for Temperature (Top) and Pressure (Bottom)"}
@@ -136,7 +136,6 @@ p2 <- challenger %>%
   xlab("Pressure") +
   ylab("Density")
 grid.arrange(p1, p2)
-
 ```
 
 ```{r Box Plots, echo=FALSE, message=FALSE, fig.align='center', out.width="50%", fig.cap="O-ring Failure Box Plot for Temperature (Top) and Pressure (Bottom)"}
@@ -202,7 +201,7 @@ stargazer(mod1,
 
 ```{r model-1-OR, echo = FALSE, message=FALSE}
 # Odds ratio for model 1
-OR <- round(exp(10*mod1$coefficients), 3)[2]
+OR <- round(exp(10 * mod1$coefficients), 3)[2]
 OR
 ```
 
@@ -338,7 +337,7 @@ curve(
   ylim = c(0, 6),
   col = "blue",
   xlab = expression(Temp), ylab = "Expected Number of Failures",
-  main = expression(pi == 6*frac(e^(beta[0] + beta[1] * x), 1 + e^(beta[0] + beta[1] * x)))
+  main = expression(pi == 6 * frac(e^(beta[0] + beta[1] * x), 1 + e^(beta[0] + beta[1] * x)))
 )
 par(new = TRUE)
 ```
@@ -497,7 +496,7 @@ Explain why.
 ```
 
 ```{r linear model, results = "asis", echo=FALSE, message=FALSE}
-model.linear <- lm(formula = I(O.ring/Number) ~ Temp, data = challenger)
+model.linear <- lm(formula = I(O.ring / Number) ~ Temp, data = challenger)
 stargazer(model.linear,
   type = "latex", omit.stat = "f",
   report = ("vc*p"),
@@ -507,7 +506,7 @@ stargazer(model.linear,
 ```
 
 ```{r checking linear model Homeoskedasticity, echo=FALSE, message=FALSE, fig.align='center', out.width="60%", fig.cap="Linear Regression Residuals"}
-par(mfrow=c(2,2)) # init 4 charts in 1 panel
+par(mfrow = c(2, 2)) # init 4 charts in 1 panel
 plot(model.linear)
 ```
 Since pressure was not statistically significant, we only use temperature as an explanatory variable to a linear regression to model the probability of failure, defined as number of O-rings failed divided by the total number of O-rings. With this model, we obtained a p-value of 0.013 for temperature, which is lowered than the stated 95% Wald confidence level, or alpha 0.05 and visualized by 1 asterisk. The negative coefficient for temperature suggests that at an increase in pressure decreases the probability of failure. 
@@ -522,7 +521,7 @@ Summarize this result with respect to the question(s) being asked and key takeaw
 ```
 
 ```{r}
-OR = round(exp(coef(mod2)),4)[2]
+OR <- round(exp(coef(mod2)), 4)[2]
 ```
 
 
